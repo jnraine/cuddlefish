@@ -1,8 +1,6 @@
 # Cuddlefish
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/cuddlefish`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+This is a gem for managing multiple database shards in a Rails application. Think [Octopus](https://github.com/thiagopradi/octopus), but simpler.
 
 ## Installation
 
@@ -20,9 +18,23 @@ Or install it yourself as:
 
     $ gem install cuddlefish
 
+## Configuration
+
+FIXME: Configuration instructions
+
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+Cuddlefish.do_stuff
+
+FIXME
+```
+
+## FAQ
+
+#### Shouldn't it be "cuttlefish"?
+
+No. It's a very physically affectionate fish.
 
 ## Development
 
@@ -32,10 +44,8 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/cuddlefish.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com/fimmtiu/cuddlefish.
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-

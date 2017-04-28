@@ -9,19 +9,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Dennis Taylor"]
   spec.email         = ["dennis.taylor@clio.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = "Shard Rails apps by using multiple database connections"
+  spec.description   = "A library for sharding Rails apps. You specify a list of databases and some tags for each, then pick the database you want at runtime by specifying which tags a particular piece of code should match."
+  spec.homepage      = "https://github.com/fimmtiu/cuddlefish"
   spec.license       = "MIT"
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
-  # to allow pushing to a single host or delete this section to allow pushing to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
-  else
-    raise "RubyGems 2.0 or newer is required to protect against " \
-      "public gem pushes."
-  end
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
@@ -31,5 +22,13 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "bundler", "~> 1.13"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "pry"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "mysql2", "~> 0.4"
+  spec.add_development_dependency "database_cleaner"
+
+  spec.add_runtime_dependency "activerecord", "~> 4.0"
+  spec.add_runtime_dependency "activesupport", "~> 4.0"
 end
