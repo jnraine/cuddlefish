@@ -9,7 +9,6 @@ require "spec_helper"
 # database server to create! the necessary databases and tables.
 
 describe "Cuddlefish integration testing" do
-
   describe ".with_shard_tags" do
     it "can talk to the database (sanity check)" do
       Cuddlefish.with_shard_tags(:foo) do
@@ -59,10 +58,21 @@ describe "Cuddlefish integration testing" do
         }.to raise_error(Cuddlefish::NoMatchingConnections)
       end
     end
+
+    it "uses the expected number of Mysql2::Client objects" do
+      Cuddlefish.with_shard_tags(:foo)  { Cuddlefish::Cat.create!(name: "Blastocyst") }
+      Cuddlefish.with_shard_tags(:bar)  { Cuddlefish::Dog.create!(name: "Chiaroscuro") }
+      Cuddlefish.with_shard_tags(:honk) { Cuddlefish::Gouda.create!(name: "Coatrack") }
+      databases = []
+      ObjectSpace.each_object do |obj|
+        databases << obj.query_options[:database] if obj.is_a?(Mysql2::Client)
+      end
+      expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
+    end
   end
 
   describe ".with_exact_shard_tags" do
-    it "ignores previously-specified tags on models" do
+    it "ignores previously-specified tags from blocks" do
       Cuddlefish.with_shard_tags(:feline) do
         Cuddlefish.with_exact_shard_tags(:honk) do
           expect {
@@ -96,20 +106,22 @@ describe "Cuddlefish integration testing" do
       end
       Cuddlefish.with_shard_tags(:foo) do
         expect(Cuddlefish::Cat.where(name: "Phlegm").count).to eq 1
+        expect(Cuddlefish::Dog.count).to eq 0
       end
       Cuddlefish.with_shard_tags(:bar) do
         expect(Cuddlefish::Cat.where(name: "Phlegm").count).to eq 1
+        expect(Cuddlefish::Dog.count).to eq 0
       end
     end
   end
 
   describe ".each_shard" do
     it "runs the block once for every shard" do
-      i = 0
+      databases = []
       Cuddlefish.each_shard do
-        i += 1
+        databases << ActiveRecord::Base.connection.raw_connection.query_options[:database]
       end
-      expect(i).to eq 3
+      expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
     end
   end
 end
