@@ -1,3 +1,6 @@
+# A simple data structure for storing the tags and the Rails
+# ConnectionSpecification associated with a given shard.
+
 module Cuddlefish
   class Shard
     include Cuddlefish::Helpers

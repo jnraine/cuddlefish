@@ -1,6 +1,6 @@
 # Cuddlefish
 
-This is a gem for managing multiple database shards in a Rails application. Think [Octopus](https://github.com/thiagopradi/octopus), but simpler, and with support for using different databases for different ActiveRecord models.
+This is a gem for managing multiple database shards in a Rails application. Think [Octopus](https://github.com/thiagopradi/octopus), but simpler, and with support for using separate databases for different ActiveRecord models.
 
 Let's say that your app has two databases — we'll call them `foo` and `bar` — sharded across two hosts. You'd have a `shards.yml` file like this (simplified for explanatory purposes):
 
@@ -61,13 +61,14 @@ Or install it yourself as:
 
 ## Configuration
 
-FIXME: Configuration instructions
+Check out the example `shards.yml` file in this repository to see how to set up your shards. Then, in your app's initializers, call this to load all the shard data and hook Cuddlefish into ActiveRecord:
+```ruby
+Cuddlefish.start("shards.yml")
+```
 
 ## Usage
 
 ```ruby
-Cuddlefish.load_config_file("shards.yml")
-
 # Restricts all ActiveRecord queries inside the block to shards with both
 # the `global` and `shard1` tags.
 Cuddlefish.with_shard_tags(:global, :shard1) do
@@ -109,8 +110,6 @@ This is currently a pre-pre-pre-alpha version that hasn't seen production yet. Y
 ### TODO:
 
 * Rename lots of things. The names are pretty bad.
-* Remove unnecessary code left in from early development.
-* Do a much better job of commenting the code.
 * Support for migrations!
 * Improve the performance of looking up connections by tags, with an eye to generating minimal garbage.
 
