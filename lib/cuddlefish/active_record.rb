@@ -16,3 +16,5 @@ module Cuddlefish
     end
   end
 end
+
+ActiveRecord::Base.include(Cuddlefish::ActiveRecord)

@@ -55,8 +55,6 @@ RSpec.configure do |config|
   end
 end
 
-ActiveRecord::Base.include(Cuddlefish::ActiveRecord)
-
 module Cuddlefish
   class Cat < ::ActiveRecord::Base
     set_shard_tags :feline
