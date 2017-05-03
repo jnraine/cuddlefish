@@ -3,8 +3,6 @@
 
 module Cuddlefish
   class Shard
-    include Cuddlefish::Helpers
-
     # The actual value doesn't matter. Resolver just expects its arguments in the form "{environment name => config}",
     # so we give it some random environment name to keep it happy.
     FAKE_ENVIRONMENT_NAME = :"your mom's favourite environment"
