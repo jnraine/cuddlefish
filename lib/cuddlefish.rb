@@ -6,16 +6,19 @@ require "cuddlefish/shard"
 require "cuddlefish/version"
 
 module Cuddlefish
-  THREAD_LOCAL_KEY = "Cuddlefish v#{Cuddlefish::VERSION} shard tags".freeze
+  THREAD_LOCAL_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
 
   mattr_reader(:shards) { Array.new }
 
-  def self.load_config_file(filename)
+  # Loads the shards config file and hooks Cuddlefish into ActiveRecord.
+  def self.start(filename)
     setup(YAML.load_file(filename))
   end
 
   def self.setup(db_specs)
-    db_specs["shards"].each { |spec| add_shard(spec) }
+    db_specs["shards"].each do |spec|
+      @@shards << Cuddlefish::Shard.new(HashWithIndifferentAccess.new(spec))
+    end
     ::ActiveRecord::Base.default_connection_handler = Cuddlefish::ConnectionHandler.new
   end
 
@@ -63,13 +66,5 @@ module Cuddlefish
         yield
       end
     end
-  end
-
-  private
-
-  # FIXME: NO LONGER TRUE. REMOVE THIS.
-  # This is also used to set up some specs, so it's broken out into a separate method.
-  def self.add_shard(spec)
-    @@shards << Cuddlefish::Shard.new(HashWithIndifferentAccess.new(spec))
   end
 end
