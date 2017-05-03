@@ -1,3 +1,8 @@
+# This class subclasses the ActiveRecord ConnectionHandler object and
+# overrides a couple of key methods to control how we look up
+# ConnectionPools. We make it the default connection handler for all
+# ActiveRecords in lib/cuddlefish.rb.
+
 module Cuddlefish
   class TooManyMatchingConnections < Error; end
   class NoMatchingConnections < Error; end

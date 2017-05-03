@@ -1,6 +1,4 @@
-# The monkey patches for ActiveRecord. This should be extended into
-# ActiveRecord::Base itself if you want to use Cuddlefish on all your
-# models, or extended separately into each individual model otherwise.
+# The monkey patches for ActiveRecord::Base.
 
 module Cuddlefish
   module ActiveRecord

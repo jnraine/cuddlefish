@@ -39,7 +39,7 @@ include Cuddlefish::ActiveRecord
 set_shard_tags :bar
 ```
 
-Then all that model's queries will be restricted to shards with the `bar` tag. Cuddlefish combines all the tags from block methods like `with_shard_tags` with the tags from the ActiveRecord model making the query to come up with the right connection to use. (If you give it a contradictory set of tags and there are no connections which match all those tags, it throws an exception. Similarly, if a query matches multiple possible connections, it throws an exception.)
+Then all that model's queries will be restricted to shards with the `bar` tag. Cuddlefish picks the connection to use by combining all the tags from block methods like `with_shard_tags` with the tags from the ActiveRecord model that's making the query. (If you give it a contradictory set of tags and there are no connections which match all those tags, it throws an exception. Similarly, if a query matches multiple possible connections, it throws an exception.)
 
 The code is fairly small and straightforward, so you can see how it works without too much brain-bending.
 
@@ -111,6 +111,8 @@ This is currently a pre-pre-pre-alpha version that hasn't seen production yet. Y
 * Rename lots of things. The names are pretty bad.
 * Remove unnecessary code left in from early development.
 * Do a much better job of commenting the code.
+* Support for migrations!
+* Improve the performance of looking up connections by tags, with an eye to generating minimal garbage.
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
