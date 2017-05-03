@@ -13,7 +13,11 @@ module Cuddlefish
       @tags_for_pool = {}
       super
       Cuddlefish.shards.each do |shard|
-        pool = establish_connection(OpenStruct.new(name: "FIXME herp a derp"), shard.connection_spec, tags: shard.tags)
+        if self.class.rails_4?
+          establish_connection(::ActiveRecord::Base, shard.connection_spec, tags: shard.tags)
+        else
+          establish_connection(shard.connection_spec, tags: shard.tags)
+        end
       end
     end
 
@@ -53,9 +57,12 @@ module Cuddlefish
     private
 
     def all_tags(klass)
-      binding.pry if Cuddlefish.current_shard_tags.nil?
-      binding.pry if klass.shard_tags.nil?
-      Cuddlefish.current_shard_tags + klass.shard_tags
+      tags = Cuddlefish.current_shard_tags
+      if klass.is_a?(Class)
+        tags + klass.shard_tags
+      else
+        tags
+      end
     end
   end
 end

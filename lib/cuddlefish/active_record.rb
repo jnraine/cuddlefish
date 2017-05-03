@@ -12,13 +12,9 @@ module Cuddlefish
 
         def set_shard_tags(*tags)
           @shard_tags = tags.map(&:to_sym)
+          self.connection_specification_name = self
         end
       end
-    end
-
-    # FIXME: document the hell out of this
-    def connection_specification_name
-      self
     end
   end
 end
