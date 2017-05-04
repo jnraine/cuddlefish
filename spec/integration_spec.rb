@@ -59,6 +59,16 @@ describe "Cuddlefish integration testing" do
       end
     end
 
+    it "restores previous shard tags when an exception happens" do
+      begin
+        Cuddlefish.with_shard_tags(:not_a_tag) do
+          Cuddlefish::Cat.create!(name: "Snuggleguts")
+        end
+      rescue Cuddlefish::NoMatchingConnections
+      end
+      expect(Cuddlefish.current_shard_tags).to be_empty
+    end
+
     it "uses the expected number of Mysql2::Client objects" do
       Cuddlefish.with_shard_tags(:foo)  { Cuddlefish::Cat.create!(name: "Blastocyst") }
       Cuddlefish.with_shard_tags(:bar)  { Cuddlefish::Dog.create!(name: "Chiaroscuro") }
@@ -85,7 +95,7 @@ describe "Cuddlefish integration testing" do
     it "still honours tags on models" do
       Cuddlefish.with_exact_shard_tags(:honk) do
         expect {
-          Cuddlefish::Cat.create(name: "Groucho")
+          Cuddlefish::Cat.create(name: "Borgnine")
         }.to raise_error(Cuddlefish::NoMatchingConnections)
       end
     end
@@ -93,9 +103,19 @@ describe "Cuddlefish integration testing" do
     it "raises an error for unknown tags" do
       Cuddlefish.with_shard_tags(:not_a_tag) do
         expect {
-          Cuddlefish::Cat.create!(name: "Strummer")
+          Cuddlefish::Cat.create!(name: "Partridge")
         }.to raise_error(Cuddlefish::NoMatchingConnections)
       end
+    end
+
+    it "restores previous shard tags when an exception happens" do
+      begin
+        Cuddlefish.with_exact_shard_tags(:not_a_tag) do
+          Cuddlefish::Cat.create!(name: "Moulding")
+        end
+      rescue Cuddlefish::NoMatchingConnections
+      end
+      expect(Cuddlefish.current_shard_tags).to be_empty
     end
   end
 

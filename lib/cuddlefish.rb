@@ -33,6 +33,7 @@ module Cuddlefish
     old_tags = current_shard_tags
     Thread.current[THREAD_LOCAL_KEY] = (old_tags | tags.flatten)
     yield
+  ensure
     Thread.current[THREAD_LOCAL_KEY] = old_tags
   end
 
@@ -44,6 +45,7 @@ module Cuddlefish
     old_tags = current_shard_tags
     Thread.current[THREAD_LOCAL_KEY] = tags.flatten
     yield
+  ensure
     Thread.current[THREAD_LOCAL_KEY] = old_tags
   end
 
