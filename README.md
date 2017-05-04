@@ -7,18 +7,22 @@ Let's say that your app has two databases â€” we'll call them `foo` and `bar` â€
 ```
 shards:
   - database: foo_production
+    host: db1.example.com
     tags:
       - host_1
       - foo
   - database: bar_production
+    host: db1.example.com
     tags:
       - host_1
       - bar
   - database: foo_production
+    host: db2.example.com
     tags:
       - host_2
       - foo
   - database: bar_production
+    host: db2.example.com
     tags:
       - host_2
       - bar
@@ -97,6 +101,8 @@ Cuddlefish.each_shard do
 end
 ```
 
+Migrations are more complicated with sharding than they are with standard ActiveRecord. Instead of putting all your migrations in your Rails app's `db/migrate` directory, Cuddlefish expects you to put them in subdirectories of `db/migrate` named after your tags, and it'll run all the migrations in each subdirectory on the shards matching those tags. For instance, given the example shards.yml from the Configuration section above, you could make a directory called `db/migrate/foo`. All the migrations you put in there would be run on the `foo_production` databases on both db1.example.com and db2.example.com when you run `rake db:migrate`.
+
 ## FAQ
 
 #### Shouldn't it be "cuttlefish"?
@@ -110,8 +116,7 @@ This is currently a pre-pre-pre-alpha version that hasn't seen production yet. Y
 ### TODO:
 
 * Rename lots of things. The names are pretty bad.
-* Support for migrations!
-* Improve the performance of looking up connections by tags, with an eye to generating minimal garbage.
+* Improve the performance of looking up connections by tags, with an eye to generating minimal garbage. At present, it's about 12% slower at a simple "create a bunch of records on different shards" benchmarks compared to straight ActiveRecord; I bet we can get that under 10% without too much difficulty.
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 

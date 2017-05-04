@@ -12,6 +12,11 @@ CREATE TABLE `foo_db`.`cats` (
   PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `foo_db`.`schema_migrations` (
+  `version` varchar(255) NOT NULL,
+  UNIQUE KEY `unique_schema_migrations` (`version`)
+);
+
 DROP DATABASE IF EXISTS `bar_db`;
 CREATE DATABASE `bar_db`;
 CREATE TABLE `bar_db`.`dogs` (
@@ -24,6 +29,11 @@ CREATE TABLE `bar_db`.`cats` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(16) NOT NULL,
   PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `bar_db`.`schema_migrations` (
+  `version` varchar(255) NOT NULL,
+  UNIQUE KEY `unique_schema_migrations` (`version`)
 );
 
 DROP DATABASE IF EXISTS `honk_db`;

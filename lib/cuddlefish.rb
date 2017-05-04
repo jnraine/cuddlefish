@@ -2,6 +2,7 @@ require "cuddlefish/error"
 require "cuddlefish/helpers"
 require "cuddlefish/active_record"
 require "cuddlefish/connection_handler"
+require "cuddlefish/migrations"
 require "cuddlefish/shard"
 require "cuddlefish/version"
 
@@ -28,7 +29,6 @@ module Cuddlefish
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match all of the tags in "tags".
-  # FIXME: SLOOOOOOOW. (Thought: Use a Set instead of an Array.)
   def self.with_shard_tags(*tags)
     old_tags = current_shard_tags
     Thread.current[THREAD_LOCAL_KEY] = (old_tags | tags.flatten)
@@ -63,7 +63,9 @@ module Cuddlefish
   # shards.yml. Each time, all queries within the block will be directed to a
   # particular database shard.
   def self.each_shard(*tags)
-    shards.each do |shard|
+    shard_list = shards
+    shard_list.select { |shard| shard.matches?(tags) } if !tags.empty?
+    shard_list.each do |shard|
       with_exact_shard_tags(shard.tags) do
         yield
       end

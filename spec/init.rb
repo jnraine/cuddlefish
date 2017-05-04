@@ -52,15 +52,11 @@ module Cuddlefish
   class Cat < ::ActiveRecord::Base
     set_shard_tags :feline
   end
-end
 
-module Cuddlefish
   class Dog < ::ActiveRecord::Base
     set_shard_tags :canine
   end
-end
 
-module Cuddlefish
   class Gouda < ::ActiveRecord::Base
     # doesn't have any tags
   end

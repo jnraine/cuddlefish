@@ -19,6 +19,10 @@ module Cuddlefish
       define_method(:method) { @config[method] }
     end
 
+    def matches?(desired_tags)
+      (desired_tags - @tags).empty?
+    end
+
     private
 
     def make_connection_spec

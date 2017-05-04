@@ -8,7 +8,7 @@ require "spec_helper"
 # Before running these tests, run the "spec/db_setup.sql" file on your
 # database server to create! the necessary databases and tables.
 
-describe "Cuddlefish integration testing" do
+describe "Basic Cuddlefish functionality" do
   describe ".with_shard_tags" do
     it "can talk to the database (sanity check)" do
       Cuddlefish.with_shard_tags(:foo) do
@@ -54,7 +54,7 @@ describe "Cuddlefish integration testing" do
     it "raises an error for unknown tags" do
       Cuddlefish.with_shard_tags(:not_a_tag) do
         expect {
-          Cuddlefish::Cat.create!(name: "Nonesuch")
+          Cuddlefish::Cat.create!(name: "Pork Bun")
         }.to raise_error(Cuddlefish::NoMatchingConnections)
       end
     end

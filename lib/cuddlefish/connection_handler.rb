@@ -10,10 +10,6 @@ module Cuddlefish
   class ConnectionHandler < ::ActiveRecord::ConnectionAdapters::ConnectionHandler
     extend Helpers
 
-    # FIXME: This is a terrible implementation of looking up pools by tags.
-    # It's slow as BALLS. Fix it up later, once you've proved that the
-    # proof of concept works.
-
     def initialize
       @tags_for_pool = {}
       super
@@ -26,7 +22,6 @@ module Cuddlefish
       end
     end
 
-    # FIXME: SOOOOOOO SLOOOOOOOOW.
     def retrieve_all_connection_pools(klass)
       desired_tags = all_tags(klass)
       @tags_for_pool.keys.select { |pool| (desired_tags - @tags_for_pool[pool]).empty? }
