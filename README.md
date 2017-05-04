@@ -39,7 +39,6 @@ end
 ...and all the code in that block will use the `foo` and `bar` databases on host 1. If you're using ActiveRecord's `establish_connection` to point particular models to a particular database, you can replace it with something like this in your model:
 
 ```ruby
-include Cuddlefish::ActiveRecord
 set_shard_tags :bar
 ```
 
