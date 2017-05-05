@@ -7,7 +7,7 @@ require "cuddlefish/shard"
 require "cuddlefish/version"
 
 module Cuddlefish
-  THREAD_LOCAL_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
+  CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
 
   mattr_reader(:shards) { Array.new }
 
@@ -24,17 +24,18 @@ module Cuddlefish
   end
 
   def self.current_shard_tags
-    Thread.current[THREAD_LOCAL_KEY] ||= []
+    Thread.current[CURRENT_SHARD_TAGS_KEY] ||= []
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match all of the tags in "tags".
   def self.with_shard_tags(*tags)
+    raise ArgumentError.new("No tags specified for with_shard_tags!") if tags.empty?
     old_tags = current_shard_tags
-    Thread.current[THREAD_LOCAL_KEY] = (old_tags | tags.flatten)
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = (old_tags | tags.flatten)
     yield
   ensure
-    Thread.current[THREAD_LOCAL_KEY] = old_tags
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
@@ -43,10 +44,10 @@ module Cuddlefish
   def self.with_exact_shard_tags(*tags)
     raise ArgumentError.new("No tags specified for with_exact_shard_tags!") if tags.empty?
     old_tags = current_shard_tags
-    Thread.current[THREAD_LOCAL_KEY] = tags.flatten
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
     yield
   ensure
-    Thread.current[THREAD_LOCAL_KEY] = old_tags
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
   end
 
   # Executes the block repeatedly, once for each tag you give it. Each time
