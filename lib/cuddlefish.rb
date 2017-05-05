@@ -64,8 +64,10 @@ module Cuddlefish
   # shards.yml. Each time, all queries within the block will be directed to a
   # particular database shard.
   def self.each_shard(*tags)
+    tags = tags.flatten
     shard_list = shards
     shard_list.select { |shard| shard.matches?(tags) } if !tags.empty?
+
     shard_list.each do |shard|
       with_exact_shard_tags(shard.tags) do
         yield
