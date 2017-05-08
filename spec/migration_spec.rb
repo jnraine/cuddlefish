@@ -9,24 +9,24 @@ describe "Cuddlefish migration support" do
 
     FileUtils.mkdir_p("#{base_dir}/foo")
     File.open("#{base_dir}/foo/20170101020304_do_some_stuff.rb", "w") do |f|
-      f.puts <<MIGRATION
-class DoSomeStuff < ActiveRecord::Migration
-  def change
-    add_column :cats, :lives_remaining, :integer, default: 69105
-  end
-end
-MIGRATION
+      f.puts <<~MIGRATION
+        class DoSomeStuff < ActiveRecord::Migration
+          def change
+            add_column :cats, :lives_remaining, :integer, default: 69105
+          end
+        end
+      MIGRATION
     end
 
     FileUtils.mkdir_p("#{base_dir}/bar")
     File.open("#{base_dir}/bar/20170102030405_do_other_stuff.rb", "w") do |f|
-      f.puts <<MIGRATION
-class DoOtherStuff < ActiveRecord::Migration
-  def change
-    add_column :dogs, :flea_count, :integer, default: 31337
-  end
-end
-MIGRATION
+      f.puts <<~MIGRATION
+        class DoOtherStuff < ActiveRecord::Migration
+          def change
+            add_column :dogs, :flea_count, :integer, default: 31337
+          end
+        end
+      MIGRATION
     end
 
     ActiveRecord::Migrator.migrations_paths = [base_dir]
