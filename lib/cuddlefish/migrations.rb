@@ -24,9 +24,12 @@ module ActiveRecord
 
   class Migrator
     class << self
-      alias_method :original_run, :run
-      alias_method :original_up, :up
-      alias_method :original_down, :down
+
+      # This is a monkey-patch. The previous version (in 4.2.8) was:
+      #
+      # def run(direction, migrations_paths, target_version)
+      #   new(direction, migrations(migrations_paths), target_version).run
+      # end
 
       def run(direction, migrations_paths, target_version)
         migrations = migrations(migrations_paths)
@@ -35,6 +38,14 @@ module ActiveRecord
         Cuddlefish.each_tag(tags) { new(direction, migrations, target_version).run }
       end
 
+      # This is a monkey-patch. The previous version (in 4.2.8) was:
+      #
+      # def up(migrations_paths, target_version = nil)
+      #   migrations = migrations(migrations_paths)
+      #   migrations.select! { |m| yield m } if block_given?
+      #   new(:up, migrations, target_version).migrate
+      # end
+
       def up(migrations_paths, target_version = nil)
         migrations = migrations(migrations_paths)
         migrations.select! { |m| yield m } if block_given?
@@ -42,6 +53,14 @@ module ActiveRecord
 
         Cuddlefish.each_tag(tags) { new(:up, migrations, target_version).migrate }
       end
+
+      # This is a monkey-patch. The previous version (in 4.2.8) was:
+      #
+      # def down(migrations_paths, target_version = nil)
+      #   migrations = migrations(migrations_paths)
+      #   migrations.select! { |m| yield m } if block_given?
+      #   new(:down, migrations, target_version).migrate
+      # end
 
       def down(migrations_paths, target_version = nil)
         migrations = migrations(migrations_paths)
