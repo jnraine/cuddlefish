@@ -1,0 +1,22 @@
+# An example shards.yml file. Customize to your heart's content.
+
+base_details: &base_details
+  adapter: mysql2
+  host: localhost
+  username: root
+
+shards:
+  - <<: *base_details
+    database: foo_db
+    tags:
+      - host_1
+      - foo
+  - <<: *base_details
+    database: bar_db
+    tags:
+      - host_1
+      - bar
+  - <<: *base_details
+    database: yarp_db
+    tags:
+      - yarp
