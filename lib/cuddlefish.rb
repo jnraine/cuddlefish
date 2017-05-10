@@ -17,7 +17,7 @@ module Cuddlefish
   end
 
   def self.setup(db_specs)
-    db_specs[ENV["RAILS_ENV"]].each do |spec|
+    db_specs[Rails.env.to_s].each do |spec|
       @@shards << Cuddlefish::Shard.new(HashWithIndifferentAccess.new(spec))
     end
     ::ActiveRecord::Base.default_connection_handler = Cuddlefish::ConnectionHandler.new
