@@ -12,7 +12,7 @@ DatabaseCleaner.strategy = :truncation
 
 def init_tests
   specs = {
-    shards: [
+    test: [
       { tags: ["foo", "feline", "canine"],
         host: ENV["TEST_MYSQL_HOST"] || "localhost",
         port: ENV["TEST_MYSQL_PORT"] || 9506,

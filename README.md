@@ -5,7 +5,7 @@ This is a gem for managing multiple database shards in a Rails application. Thin
 Let's say that your app has two databases — we'll call them `foo` and `bar` — sharded across two hosts. You'd have a `shards.yml` file like this (simplified for explanatory purposes):
 
 ```
-shards:
+development:
   - database: foo_production
     host: db1.example.com
     tags:
