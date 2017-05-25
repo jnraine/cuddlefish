@@ -32,10 +32,10 @@ module ActiveRecord
       # end
 
       def run(direction, migrations_paths, target_version)
-        migrations = migrations(migrations_paths)
-        tags = migrations.map(&:tag).uniq
-
-        Cuddlefish.each_tag(tags) { new(direction, migrations, target_version).run }
+        grouped_migrations = migrations(migrations_paths).select {|m| m.version == target_version }.group_by(&:tag)
+        grouped_migrations.each do |tag, migrations_for_tag|
+          Cuddlefish.with_exact_shard_tags(tag) { new(direction, migrations_for_tag, target_version).run }
+        end
       end
 
       # This is a monkey-patch. The previous version (in 4.2.8) was:
