@@ -58,7 +58,7 @@ module Cuddlefish
 
     def all_tags(klass)
       tags = Cuddlefish.current_shard_tags
-      tags = (tags | klass.shard_tags) if klass.is_a?(Class)
+      tags = (tags | klass.shard_tags)
       tags
     end
   end

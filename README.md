@@ -39,7 +39,9 @@ end
 ...and all the code in that block will use the `foo` and `bar` databases on host 1. If you're using ActiveRecord's `establish_connection` to point particular models to a particular database, you can replace it with something like this in your model:
 
 ```ruby
-set_shard_tags :bar
+class MyModel < ActiveRecord::Base
+  set_shard_tags :bar
+end
 ```
 
 Then all that model's queries will be restricted to shards with the `bar` tag. Cuddlefish picks the connection to use by combining all the tags from block methods like `with_shard_tags` with the tags from the ActiveRecord model that's making the query. (If you give it a contradictory set of tags and there are no connections which match all those tags, it throws an exception. Similarly, if a query matches multiple possible connections, it throws an exception.)
@@ -98,6 +100,9 @@ end
 Cuddlefish.each_shard do
   # do things
 end
+
+# Use this shard for all database queries that don't have a shard specified.
+ActiveRecord::Base.default_shard_tags = [:my_default_shard]
 ```
 
 Migrations are more complicated with sharding than they are with standard ActiveRecord. Instead of putting all your migrations in your Rails app's `db/migrate` directory, Cuddlefish expects you to put them in subdirectories of `db/migrate` named after your tags, and it'll run all the migrations in each subdirectory on the shards matching those tags. For instance, given the example shards.yml from the Configuration section above, you could make a directory called `db/migrate/foo`. All the migrations you put in there would be run on the `foo_production` databases on both db1.example.com and db2.example.com when you run `rake db:migrate`.
