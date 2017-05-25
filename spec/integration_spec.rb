@@ -119,6 +119,21 @@ describe "Basic Cuddlefish functionality" do
     end
   end
 
+  describe ".add_shard_tags & .remove_shard_tags" do
+    it "change the current shard tags" do
+      expect {
+        Cuddlefish.add_shard_tags(:feline, :foo)
+      }.to change { Cuddlefish.current_shard_tags }.from([]).to([:feline, :foo])
+      Cuddlefish::Cat.create!(name: "Curry Nog")
+      expect {
+        Cuddlefish.remove_shard_tags(:feline)
+      }.to change { Cuddlefish.current_shard_tags }.from([:feline, :foo]).to([:foo])
+      expect {
+        Cuddlefish.remove_shard_tags(:foo)
+      }.to change { Cuddlefish.current_shard_tags }.from([:foo]).to([])
+    end
+  end
+
   describe ".each_tag" do
     it "runs the block in the context of each tag" do
       Cuddlefish.each_tag(:foo, :bar) do

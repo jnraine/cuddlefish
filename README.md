@@ -73,6 +73,10 @@ Cuddlefish.start("shards.yml")
 
 ## Usage
 
+### Block-based methods
+
+These are the easiest way to work with Cuddlefish. You pass these methods a block; which shard the queries inside the block use will vary based on the arguments.
+
 ```ruby
 # Restricts all ActiveRecord queries inside the block to shards with both
 # the `global` and `shard1` tags.
@@ -100,10 +104,23 @@ end
 Cuddlefish.each_shard do
   # do things
 end
+```
+
+### Other methods
+
+```
+# After this, all subsequent queries will be restricted by the :foo and :bar tags.
+# Use with care.
+Cuddlefish.add_shard_tags(:foo, :bar)
+
+# Undoes the effect of a previous add_shard_tags. Use with care.
+Cuddlefish.remove_shard_tags(:foo, :bar)
 
 # Use this shard for all database queries that don't have a shard specified.
 ActiveRecord::Base.default_shard_tags = [:my_default_shard]
 ```
+
+### Migrations
 
 Migrations are more complicated with sharding than they are with standard ActiveRecord. Instead of putting all your migrations in your Rails app's `db/migrate` directory, Cuddlefish expects you to put them in subdirectories of `db/migrate` named after your tags, and it'll run all the migrations in each subdirectory on the shards matching those tags. For instance, given the example shards.yml from the Configuration section above, you could make a directory called `db/migrate/foo`. All the migrations you put in there would be run on the `foo_production` databases on both db1.example.com and db2.example.com when you run `rake db:migrate`.
 

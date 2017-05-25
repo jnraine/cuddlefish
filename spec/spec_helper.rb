@@ -1,4 +1,8 @@
-ENV["RAILS_ENV"] = "test"
+module Rails
+  def self.env
+    "test"
+  end
+end
 
 require "rubygems"
 

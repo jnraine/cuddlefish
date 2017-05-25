@@ -50,6 +50,16 @@ module Cuddlefish
     Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
   end
 
+  def self.add_shard_tags(*tags)
+    raise ArgumentError.new("No tags specified for add_shard_tags!") if tags.empty?
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = (current_shard_tags | tags.flatten)
+  end
+
+  def self.remove_shard_tags(*tags)
+    raise ArgumentError.new("No tags specified for remove_shard_tags!") if tags.empty?
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = (current_shard_tags - tags.flatten)
+  end
+
   # Executes the block repeatedly, once for each tag you give it. Each time
   # it's wrapped in a `with_shard_tags` call for that individual tag.
   def self.each_tag(*tags)
