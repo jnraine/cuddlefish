@@ -159,4 +159,13 @@ describe "Basic Cuddlefish functionality" do
       expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
     end
   end
+
+  describe ".map_shards" do
+    it "runs the block once for every shard and returns the results" do
+      databases = Cuddlefish.map_shards do
+        ActiveRecord::Base.connection.raw_connection.query_options[:database]
+      end
+      expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
+    end
+  end
 end

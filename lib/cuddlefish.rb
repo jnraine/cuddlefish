@@ -73,12 +73,23 @@ module Cuddlefish
   # Executes the block repeatedly, once for each shard defined in your
   # shards.yml. Each time, all queries within the block will be directed to a
   # particular database shard.
-  def self.each_shard(*tags)
+  def self.each_shard(*tags, &block)
+    iterate_over_shards(:each, tags, &block)
+  end
+
+  # Same as each_shard, but returns an array of every iteration's results.
+  def self.map_shards(*tags, &block)
+    iterate_over_shards(:map, tags, &block)
+  end
+
+  private
+
+  def self.iterate_over_shards(method, tags)
     tags = tags.flatten
     shard_list = shards
     shard_list.select { |shard| shard.matches?(tags) } if !tags.empty?
 
-    shard_list.each do |shard|
+    shard_list.public_send(method) do |shard|
       with_exact_shard_tags(shard.tags) do
         yield
       end

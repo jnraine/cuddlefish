@@ -104,6 +104,11 @@ end
 Cuddlefish.each_shard do
   # do things
 end
+
+# Same as each_shard, but returns an array of every iteration's results.
+Cuddlefish.map_shards do
+  # do things
+end
 ```
 
 ### Other methods
