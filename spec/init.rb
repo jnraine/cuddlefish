@@ -11,9 +11,10 @@ require "database_cleaner"
 DatabaseCleaner.strategy = :truncation
 
 def init_tests
-  specs = {
+  shard_specifications = {
     test: [
       { tags: ["foo", "feline", "canine"],
+        name: :shard_1,
         host: ENV["TEST_MYSQL_HOST"] || "localhost",
         port: ENV["TEST_MYSQL_PORT"] || 9506,
         username: ENV["TEST_MYSQL_USER"] || "root",
@@ -22,6 +23,7 @@ def init_tests
         database: "foo_db",
       },
       { tags: ["bar", "feline", "canine"],
+        name: :shard_2,
         host: ENV["TEST_MYSQL_HOST"] || "localhost",
         port: ENV["TEST_MYSQL_PORT"] || 9506,
         username: ENV["TEST_MYSQL_USER"] || "root",
@@ -30,6 +32,7 @@ def init_tests
         database: "bar_db",
       },
       { tags: ["honk"],
+        name: :the_mighty_honk,
         host: ENV["TEST_MYSQL_HOST"] || "localhost",
         port: ENV["TEST_MYSQL_PORT"] || 9506,
         username: ENV["TEST_MYSQL_USER"] || "root",
@@ -39,7 +42,7 @@ def init_tests
       },
     ],
   }.with_indifferent_access
-  Cuddlefish.setup(specs)
+  Cuddlefish.setup(shard_specifications)
 end
 
 def cleanup
