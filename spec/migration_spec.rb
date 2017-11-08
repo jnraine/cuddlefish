@@ -4,6 +4,13 @@ require "fileutils"
 describe "Cuddlefish migration support" do
   let(:base_dir) { "/tmp/cuddlefish-db/migrate" }
 
+  before(:all) do
+    Cuddlefish.tags_for_migration = lambda do |migration|
+      raise "wtf: #{migration.filename}" if migration.filename !~ /\/(\w+)\/\w+\.rb$/
+      [$1]
+    end
+  end
+
   before do
     FileUtils.rm_rf(base_dir)
 

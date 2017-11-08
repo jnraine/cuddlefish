@@ -127,7 +127,27 @@ ActiveRecord::Base.default_shard_tags = [:my_default_shard]
 
 ### Migrations
 
-Migrations are more complicated with sharding than they are with standard ActiveRecord. Instead of putting all your migrations in your Rails app's `db/migrate` directory, Cuddlefish expects you to put them in subdirectories of `db/migrate` named after your tags, and it'll run all the migrations in each subdirectory on the shards matching those tags. For instance, given the example shards.yml from the Configuration section above, you could make a directory called `db/migrate/foo`. All the migrations you put in there would be run on the `foo_production` databases on both db1.example.com and db2.example.com when you run `rake db:migrate`.
+FIXME YARP
+
+Migrations are more complicated with sharding than they are with standard ActiveRecord because you have to decide which migrations will run on which shards. Cuddlefish lets you provide a `tags_for_migration` lambda which, when given an ActiveRecord::MigrationProxy, should return an array of tags indicating which shards that migration should happen on. For instance, given the sample `shards.yml` setup above, you might set up your `db/migrate` directory to look like this:
+
+```
+$ ls db/migrate
+foo/    bar/
+```
+
+...where the `foo` subdirectory contains all the migrations which should be run on the `foo_production` databases, and the `bar` subdirectory contains all the migrations which should be run on the `bar_production` databases. You could set up `tags_for_migration` like this in your Rails app's initializers:
+
+```ruby
+Cuddlefish.tags_for_migration = lambda do |migration|
+  if migration.filename !~ /\/(\w+)\/\w+\.rb$/
+    raise "Badly-named or misplaced migration: #{migration.filename}"
+  end
+  [$1.to_sym]
+end
+```
+
+Now your migrations in `foo/` will be run with the `[:foo]` tags, and likewise for `bar/`, so the migrations should happen on the correct servers.
 
 ## FAQ
 

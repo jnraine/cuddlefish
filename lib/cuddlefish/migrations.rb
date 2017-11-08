@@ -2,14 +2,9 @@
 
 module ActiveRecord
   class MigrationProxy
-    def tag
-      return @tag if @tag
-      ActiveRecord::Migrator.migrations_paths.each do |path|
-        path = path.chomp("/")
-        if filename =~ %r<^#{path}/([^/]+)/>
-          return (@tag = $1.to_sym)
-        end
-      end
+    def tags
+      @tags = Cuddlefish.tags_for_migration.call(self).map(&:to_sym) if !defined?(@tag)
+      @tags
     end
   end
 
@@ -32,9 +27,9 @@ module ActiveRecord
       # end
 
       def run(direction, migrations_paths, target_version)
-        grouped_migrations = migrations(migrations_paths).select {|m| m.version == target_version }.group_by(&:tag)
-        grouped_migrations.each do |tag, migrations_for_tag|
-          Cuddlefish.with_exact_shard_tags(tag) { new(direction, migrations_for_tag, target_version).run }
+        relevant_migrations = migrations(migrations_paths).select {|m| m.version == target_version }
+        relevant_migrations.each do |migration|
+          run_migration_on_shard(direction, migration, target_version)
         end
       end
 
@@ -49,9 +44,10 @@ module ActiveRecord
       def up(migrations_paths, target_version = nil)
         migrations = migrations(migrations_paths)
         migrations.select! { |m| yield m } if block_given?
-        tags = migrations.map(&:tag).uniq
 
-        Cuddlefish.each_tag(tags) { new(:up, migrations, target_version).migrate }
+        migrations.each do |migration|
+          run_migration_on_shard(:up, migration, target_version)
+        end
       end
 
       # This is a monkey-patch. The previous version (in 4.2.8) was:
@@ -65,9 +61,18 @@ module ActiveRecord
       def down(migrations_paths, target_version = nil)
         migrations = migrations(migrations_paths)
         migrations.select! { |m| yield m } if block_given?
-        tags = migrations.map(&:tag).uniq
 
-        Cuddlefish.each_tag(tags) { new(:down, migrations, target_version).migrate }
+        migrations.each do |migration|
+          run_migration_on_shard(:down, migration, target_version)
+        end
+      end
+
+      private
+
+      def run_migration_on_shard(direction, migration, target_version)
+        Cuddlefish.with_exact_shard_tags(*migration.tags) do
+          new(direction, [migration], target_version).migrate
+        end
       end
     end
   end

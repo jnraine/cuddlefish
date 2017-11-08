@@ -10,6 +10,7 @@ module Cuddlefish
   CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
 
   mattr_reader(:shards) { Array.new }
+  mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
 
   # Loads the shards config file and hooks Cuddlefish into ActiveRecord.
   def self.start(filename)
