@@ -22,13 +22,17 @@ module Cuddlefish
       end
     end
 
-    def retrieve_all_connection_pools(klass)
+    def all_connection_pools
+      @tags_for_pool.keys
+    end
+
+    def connection_pools_for_class(klass)
       desired_tags = all_tags(klass)
       @tags_for_pool.keys.select { |pool| (desired_tags - @tags_for_pool[pool]).empty? }
     end
 
     def retrieve_connection_pool(klass)
-      pools = retrieve_all_connection_pools(klass)
+      pools = connection_pools_for_class(klass)
       case pools.count
       when 0
         raise NoMatchingConnections.new("Found no connections matching #{all_tags(klass).inspect}")
