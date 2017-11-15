@@ -1,12 +1,12 @@
 require "spec_helper"
 
 # For the integration tests, you need to provide a database for it to
-# connect to. The user you're connecting with needs permissions to create!
+# connect to. The user you're connecting with needs permissions to create
 # databases and tables. You can customize the host, port, user, and
 # password with the environment variables below.
 #
 # Before running these tests, run the "spec/db_setup.sql" file on your
-# database server to create! the necessary databases and tables.
+# database server to create the necessary databases and tables.
 
 describe "Basic Cuddlefish functionality" do
   describe ".with_shard_tags" do
