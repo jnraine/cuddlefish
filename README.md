@@ -75,7 +75,7 @@ Cuddlefish.start("shards.yml")
 
 ### Block-based methods
 
-These are the easiest way to work with Cuddlefish. You pass these methods a block; which shard the queries inside the block use will vary based on the arguments.
+These are the easiest way to work with Cuddlefish. You pass these methods a block; which shard the queries inside the block use varies based on the arguments.
 
 ```ruby
 # Restricts all ActiveRecord queries inside the block to shards with both
@@ -86,7 +86,15 @@ end
 
 # Restricts all ActiveRecord queries inside the block to shards with the
 # `global` tag, ignoring any tag restrictions set outside the block by
-# other Cuddlefish methods.
+# other Cuddlefish methods but honouring tags set on specific models by
+# `set_shard_tags`.
+Cuddlefish.with_only_shard_tags(:global) do
+  MyRecord.find(...)
+end
+
+# Restricts all ActiveRecord queries inside the block to shards with the
+# `global` tag, ignoring any tag restrictions set outside the block by
+# other Cuddlefish methods or by `set_shard_tags`.
 Cuddlefish.with_exact_shard_tags(:global) do
   MyRecord.find(...)
 end

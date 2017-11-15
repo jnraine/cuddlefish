@@ -81,10 +81,10 @@ describe "Basic Cuddlefish functionality" do
     end
   end
 
-  describe ".with_exact_shard_tags" do
+  describe ".with_only_shard_tags" do
     it "ignores previously-specified tags from blocks" do
       Cuddlefish.with_shard_tags(:feline) do
-        Cuddlefish.with_exact_shard_tags(:honk) do
+        Cuddlefish.with_only_shard_tags(:honk) do
           expect {
             Cuddlefish::Gouda.create(name: "Fondue")
           }.to change { Cuddlefish::Gouda.count }.by(1)
@@ -93,7 +93,7 @@ describe "Basic Cuddlefish functionality" do
     end
 
     it "still honours tags on models" do
-      Cuddlefish.with_exact_shard_tags(:honk) do
+      Cuddlefish.with_only_shard_tags(:honk) do
         expect {
           Cuddlefish::Cat.create(name: "Borgnine")
         }.to raise_error(Cuddlefish::NoMatchingConnections)
@@ -101,7 +101,7 @@ describe "Basic Cuddlefish functionality" do
     end
 
     it "raises an error for unknown tags" do
-      Cuddlefish.with_shard_tags(:not_a_tag) do
+      Cuddlefish.with_only_shard_tags(:not_a_tag) do
         expect {
           Cuddlefish::Cat.create!(name: "Partridge")
         }.to raise_error(Cuddlefish::NoMatchingConnections)
@@ -110,8 +110,46 @@ describe "Basic Cuddlefish functionality" do
 
     it "restores previous shard tags when an exception happens" do
       begin
-        Cuddlefish.with_exact_shard_tags(:not_a_tag) do
+        Cuddlefish.with_only_shard_tags(:not_a_tag) do
           Cuddlefish::Cat.create!(name: "Moulding")
+        end
+      rescue Cuddlefish::NoMatchingConnections
+      end
+      expect(Cuddlefish.current_shard_tags).to be_empty
+    end
+  end
+
+  describe ".with_exact_shard_tags" do
+    it "ignores previously-specified tags from blocks" do
+      Cuddlefish.with_shard_tags(:feline) do
+        Cuddlefish.with_exact_shard_tags(:honk) do
+          expect {
+            Cuddlefish::Gouda.create(name: "Raclette")
+          }.to change { Cuddlefish::Gouda.count }.by(1)
+        end
+      end
+    end
+
+    it "ignores tags on models" do
+      Cuddlefish.with_exact_shard_tags(:honk) do
+        expect {
+          Cuddlefish::Cat.create(name: "Anastasia")
+        }.to raise_error(ActiveRecord::StatementInvalid, /Table 'honk_db\.cats' doesn't exist/)
+      end
+    end
+
+    it "raises an error for unknown tags" do
+      Cuddlefish.with_exact_shard_tags(:not_a_tag) do
+        expect {
+          Cuddlefish::Cat.create!(name: "Greg")
+        }.to raise_error(Cuddlefish::NoMatchingConnections)
+      end
+    end
+
+    it "restores previous shard tags when an exception happens" do
+      begin
+        Cuddlefish.with_exact_shard_tags(:not_a_tag) do
+          Cuddlefish::Cat.create!(name: "Lucy")
         end
       rescue Cuddlefish::NoMatchingConnections
       end

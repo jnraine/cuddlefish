@@ -8,6 +8,7 @@ require "cuddlefish/version"
 
 module Cuddlefish
   CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
+  CLASS_TAGS_DISABLED_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} class tags disabled"
 
   mattr_reader(:shards) { Array.new }
   mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
@@ -40,10 +41,22 @@ module Cuddlefish
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
+  # match only the tags in "tags", ignoring the restrictions imposed by any
+  # enclosing `with_shard_tags` calls or tags on models.
+  def self.with_exact_shard_tags(*tags)
+    old_tags = current_shard_tags
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
+    Thread.current[CLASS_TAGS_DISABLED_KEY] = true
+    yield
+  ensure
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
+    Thread.current[CLASS_TAGS_DISABLED_KEY] = false
+  end
+
+  # Restricts all ActiveRecord queries inside the block to shards which
   # match only the tags in "tags" (and any model-specific tags), ignoring
   # the restrictions imposed by any enclosing `with_shard_tags` calls.
-  def self.with_exact_shard_tags(*tags)
-    raise ArgumentError.new("No tags specified for with_exact_shard_tags!") if tags.empty?
+  def self.with_only_shard_tags(*tags)
     old_tags = current_shard_tags
     Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
     yield
@@ -63,6 +76,7 @@ module Cuddlefish
 
   # Executes the block repeatedly, once for each tag you give it. Each time
   # it's wrapped in a `with_shard_tags` call for that individual tag.
+  # TO DO: Have it return an enumerator so we can chain `.map`, etc.
   def self.each_tag(*tags)
     tags.flatten.each do |tag|
       with_shard_tags(tag) do
@@ -74,6 +88,7 @@ module Cuddlefish
   # Executes the block repeatedly, once for each shard defined in your
   # shards.yml. Each time, all queries within the block will be directed to a
   # particular database shard.
+  # TO DO: Have it return an enumerator. Then we could get rid of `map_shards`.
   def self.each_shard(*tags, &block)
     iterate_over_shards(:each, tags, &block)
   end
