@@ -135,8 +135,6 @@ ActiveRecord::Base.default_shard_tags = [:my_default_shard]
 
 ### Migrations
 
-FIXME YARP
-
 Migrations are more complicated with sharding than they are with standard ActiveRecord because you have to decide which migrations will run on which shards. Cuddlefish lets you provide a `tags_for_migration` lambda which, when given an ActiveRecord::MigrationProxy, should return an array of tags indicating which shards that migration should happen on. For instance, given the sample `shards.yml` setup above, you might set up your `db/migrate` directory to look like this:
 
 ```
