@@ -11,7 +11,7 @@ module Cuddlefish
     extend Helpers
 
     def initialize
-      @tags_for_pool = {}
+      @tags_for_pool = new_thread_safe_hash
       super
       Cuddlefish.shards.each do |shard|
         if self.class.rails_4?
@@ -56,6 +56,13 @@ module Cuddlefish
         @tags_for_pool[pool] = tags if tags
         pool
       end
+    end
+
+    # The utility class for thread-safe hashes changed between Rails 4 and 5.
+    def new_thread_safe_hash
+      capacity = Cuddlefish.shards.count
+      klass = self.class.rails_4? ? ThreadSafe::Cache : Concurrent::Map
+      klass.new(initial_capacity: capacity)
     end
 
     def all_tags(klass)
