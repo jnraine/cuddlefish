@@ -206,4 +206,12 @@ describe "Basic Cuddlefish functionality" do
       expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
     end
   end
+
+  describe "Defeat all AR connection caching!" do
+    it "puts connections to separate shards for the same class in different pools" do
+      Cuddlefish.with_shard_tags(:foo) { Cuddlefish::Cat.connection }
+      Cuddlefish.with_shard_tags(:bar) { Cuddlefish::Cat.connection }
+      expect(Cuddlefish::Cat.connection_handler.connection_pool_list.count).to eq 2
+    end
+  end
 end
