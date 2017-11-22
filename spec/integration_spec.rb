@@ -207,11 +207,17 @@ describe "Basic Cuddlefish functionality" do
     end
   end
 
-  describe "Defeat all AR connection caching!" do
-    it "puts connections to separate shards for the same class in different pools" do
-      Cuddlefish.with_shard_tags(:foo) { Cuddlefish::Cat.connection }
-      Cuddlefish.with_shard_tags(:bar) { Cuddlefish::Cat.connection }
-      expect(Cuddlefish::Cat.connection_handler.connection_pool_list.count).to eq 2
+  describe "connection handler" do
+    it "starts with one pool for each shard" do
+      expect(Cuddlefish::Cat.connection_handler.connection_pool_list.count).to eq 3
+    end
+
+    it "allows manually removing connections" do
+      expect do
+        Cuddlefish.with_shard_tags(:foo) do
+          Cuddlefish::Cat.connection_handler.remove_connection(Cuddlefish::Cat)
+        end
+      end.to change { Cuddlefish::Cat.connection_handler.connection_pool_list.count }.from(3).to(2)
     end
   end
 end

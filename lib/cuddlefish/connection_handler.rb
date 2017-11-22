@@ -10,6 +10,8 @@ module Cuddlefish
   class ConnectionHandler < ::ActiveRecord::ConnectionAdapters::ConnectionHandler
     extend Helpers
 
+    attr_reader :tags_for_pool
+
     def initialize
       @tags_for_pool = new_thread_safe_hash
       super
@@ -22,13 +24,13 @@ module Cuddlefish
       end
     end
 
-    def all_connection_pools
-      @tags_for_pool.keys
+    def connection_pool_list
+      tags_for_pool.keys
     end
 
     def connection_pools_for_class(klass)
       desired_tags = all_tags(klass)
-      @tags_for_pool.keys.select { |pool| (desired_tags - @tags_for_pool[pool]).empty? }
+      tags_for_pool.keys.select { |pool| (desired_tags - tags_for_pool[pool]).empty? }
     end
 
     def retrieve_connection_pool(klass)
@@ -43,17 +45,25 @@ module Cuddlefish
       end
     end
 
+    def remove_connection(owner)
+      if pool = retrieve_connection_pool(owner)
+        tags_for_pool.delete(pool)
+        pool.disconnect!
+        pool.spec.config
+      end
+    end
+
     # The arguments to this method changed between Rails 4.2 and 5.0.
     if rails_4?
       def establish_connection(owner, spec, tags: nil)
-        pool = super(owner, spec)
-        @tags_for_pool[pool] = tags if tags
+        pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+        tags_for_pool[pool] = tags if tags
         pool
       end
     else
       def establish_connection(spec, tags: nil)
         pool = super(spec)
-        @tags_for_pool[pool] = tags if tags
+        tags_for_pool[pool] = tags if tags
         pool
       end
     end
