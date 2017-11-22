@@ -19,8 +19,6 @@ def unique_name(type)
   "#{type}-#{$counter += 1}"
 end
 
-init_tests
-
 $iterations.times do |i|
   Cuddlefish.with_shard_tags(:foo) do
     Cuddlefish::Cat.create!(name: unique_name(:cat))
