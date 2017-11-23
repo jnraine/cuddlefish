@@ -17,9 +17,9 @@ module Cuddlefish
       super
       Cuddlefish.shards.each do |shard|
         if self.class.rails_4?
-          establish_connection(::ActiveRecord::Base, shard.connection_spec, tags: shard.tags)
+          establish_connection(nil, shard.connection_spec)
         else
-          establish_connection(shard.connection_spec, tags: shard.tags)
+          establish_connection(shard.connection_spec)
         end
       end
     end
@@ -55,15 +55,15 @@ module Cuddlefish
 
     # The arguments to this method changed between Rails 4.2 and 5.0.
     if rails_4?
-      def establish_connection(owner, spec, tags: nil)
+      def establish_connection(_owner, spec)
         pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
-        tags_for_pool[pool] = tags if tags
+        tags_for_pool[pool] = (spec.config[:tags] || [])
         pool
       end
     else
-      def establish_connection(spec, tags: nil)
+      def establish_connection(spec)
         pool = super(spec)
-        tags_for_pool[pool] = tags if tags
+        tags_for_pool[pool] = (spec.config[:tags] || [])
         pool
       end
     end
