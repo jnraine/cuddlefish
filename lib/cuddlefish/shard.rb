@@ -15,8 +15,8 @@ module Cuddlefish
       @connection_spec = make_connection_spec
     end
 
-    %i(tags host database adapter port username password).each do |method|
-      define_method(:method) { @config[method] }
+    %i(tags name host database adapter port username password).each do |method|
+      define_method(method) { @config[method] }
     end
 
     def matches?(desired_tags)

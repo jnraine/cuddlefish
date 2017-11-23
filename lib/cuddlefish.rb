@@ -4,15 +4,14 @@ require "cuddlefish/active_record"
 require "cuddlefish/connection_handler"
 require "cuddlefish/migrations"
 require "cuddlefish/shard"
+require "cuddlefish/shard_manager"
 require "cuddlefish/version"
 
 module Cuddlefish
-  class InvalidShardSpecification < StandardError; end
-
   CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
   CLASS_TAGS_DISABLED_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} class tags disabled"
 
-  mattr_reader(:shards) { Array.new }
+  mattr_reader(:shard_manager) { Cuddlefish::ShardManager.new }
   mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
 
   # Loads the shards config file and hooks Cuddlefish into ActiveRecord.
@@ -21,18 +20,14 @@ module Cuddlefish
   end
 
   def self.setup(db_specs)
-    names = {}
     db_specs[Rails.env.to_s].each do |spec|
-      spec.symbolize_keys!
-      if spec[:name].nil? || spec[:name].empty?
-        tags = spec[:tags].sort.join(",")
-        spec[:name] = [*spec.values_at(:host, :database, :username), tags].join(":").freeze
-      end
-      raise InvalidShardSpecification.new("Non-unique shard name: '#{spec[:name]}'") if names.key?(spec[:name])
-      names[spec[:name]] = 1
-      @@shards << Cuddlefish::Shard.new(spec)
+      shard_manager.add(spec)
     end
     ::ActiveRecord::Base.default_connection_handler = Cuddlefish::ConnectionHandler.new
+  end
+
+  def self.shards
+    shard_manager.shards
   end
 
   def self.current_shard_tags
