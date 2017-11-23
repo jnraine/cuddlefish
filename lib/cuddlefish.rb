@@ -7,6 +7,8 @@ require "cuddlefish/shard"
 require "cuddlefish/version"
 
 module Cuddlefish
+  class InvalidShardSpecification < StandardError; end
+
   CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
   CLASS_TAGS_DISABLED_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} class tags disabled"
 
@@ -19,8 +21,16 @@ module Cuddlefish
   end
 
   def self.setup(db_specs)
+    names = {}
     db_specs[Rails.env.to_s].each do |spec|
-      @@shards << Cuddlefish::Shard.new(HashWithIndifferentAccess.new(spec))
+      spec.symbolize_keys!
+      if spec[:name].nil? || spec[:name].empty?
+        tags = spec[:tags].sort.join(",")
+        spec[:name] = [*spec.values_at(:host, :database, :username), tags].join(":").freeze
+      end
+      raise InvalidShardSpecification.new("Non-unique shard name: '#{spec[:name]}'") if names.key?(spec[:name])
+      names[spec[:name]] = 1
+      @@shards << Cuddlefish::Shard.new(spec)
     end
     ::ActiveRecord::Base.default_connection_handler = Cuddlefish::ConnectionHandler.new
   end
