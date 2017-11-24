@@ -12,6 +12,7 @@ module Cuddlefish
     def initialize
       @shards = []
       @shard_for_pool = new_thread_safe_hash
+      @lock = Mutex.new
     end
 
     # Creates & returns a new, disconnected shard based on the given specification.
@@ -50,17 +51,18 @@ module Cuddlefish
       shard
     end
 
-    # FIXME: Theoretically there could be an inter-thread race condition
-    # with these two methods. We should really have an exclusive lock
-    # around the bodies of these methods...
     def add_connection_pool(pool, shard)
-      @shard_for_pool[pool] = shard
-      shard.connection_pool = pool
+      @lock.synchronize do
+        @shard_for_pool[pool] = shard
+        shard.connection_pool = pool
+      end
     end
 
     def remove_connection_pool(pool)
-      shard = @shard_for_pool.delete(pool)
-      shard.connection_pool = nil
+      @lock.synchronize do
+        shard = @shard_for_pool.delete(pool)
+        shard.connection_pool = nil
+      end
     end
 
     private
