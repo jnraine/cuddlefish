@@ -12,6 +12,7 @@ module Cuddlefish
       @shard_for_pool = {}   # FIXME: make this a thread-safe hash
     end
 
+    # Creates & returns a new, disconnected shard based on the given specification.
     def add(spec)
       spec = spec.symbolize_keys
       validate_tags_present(spec)
@@ -21,6 +22,7 @@ module Cuddlefish
       end
       validate_unique_name(spec[:name])
       @shards << Cuddlefish::Shard.new(spec)
+      shards.last
     end
 
     # Returns the currently connected shards which match the given set of tags.
@@ -31,7 +33,7 @@ module Cuddlefish
     end
 
     # Returns the shards which match the given set of tags.
-    def matching_shards(desired_tags)
+    def matching_shards(desired_tags = [])
       shards.select { |shard| shard.matches?(desired_tags) }
     end
 
