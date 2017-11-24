@@ -114,10 +114,7 @@ module Cuddlefish
   private
 
   def self.iterate_over_shards(method, tags)
-    tags = tags.flatten
-    shard_list = shards
-    shard_list.select { |shard| shard.matches?(tags) } if !tags.empty?
-
+    shard_list = shard_manager.matching_connected_shards(tags.flatten)
     shard_list.public_send(method) do |shard|
       with_exact_shard_tags(shard.tags) do
         yield

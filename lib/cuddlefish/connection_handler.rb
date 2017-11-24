@@ -10,10 +10,7 @@ module Cuddlefish
   class ConnectionHandler < ::ActiveRecord::ConnectionAdapters::ConnectionHandler
     extend Helpers
 
-    attr_reader :tags_for_pool
-
     def initialize
-      @tags_for_pool = new_thread_safe_hash
       super
       Cuddlefish.shards.each do |shard|
         if self.class.rails_4?
@@ -25,12 +22,12 @@ module Cuddlefish
     end
 
     def connection_pool_list
-      tags_for_pool.keys
+      Cuddlefish.shard_manager.all_connection_pools
     end
 
     def connection_pools_for_class(klass)
       desired_tags = all_tags(klass)
-      tags_for_pool.keys.select { |pool| (desired_tags - tags_for_pool[pool]).empty? }
+      Cuddlefish.shard_manager.matching_connected_shards(desired_tags).map(&:connection_pool)
     end
 
     def retrieve_connection_pool(klass)
@@ -47,7 +44,7 @@ module Cuddlefish
 
     def remove_connection(owner)
       if pool = retrieve_connection_pool(owner)
-        tags_for_pool.delete(pool)
+        Cuddlefish.shard_manager.remove_connection_pool(pool)
         pool.disconnect!
         pool.spec.config
       end
@@ -56,13 +53,17 @@ module Cuddlefish
     # The arguments to this method changed between Rails 4.2 and 5.0.
     if rails_4?
       def establish_connection(_owner, spec)
-        pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
-        tags_for_pool[pool] = (spec.config[:tags] || [])
-        pool
+        shard = Cuddlefish.shard_manager.find_by_name(spec.config[:name])
+        if !shard.connected?
+          pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+          Cuddlefish.shard_manager.add_connection_pool(pool, shard)
+        end
+        shard.connection_pool
       end
     else
       def establish_connection(spec)
         pool = super(spec)
+        FIXME
         tags_for_pool[pool] = (spec.config[:tags] || [])
         pool
       end

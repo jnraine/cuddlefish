@@ -8,6 +8,7 @@ module Cuddlefish
     FAKE_ENVIRONMENT_NAME = :"your mom's favourite environment"
 
     attr_reader :tags, :connection_spec
+    attr_accessor :connection_pool
 
     def initialize(config)
       @tags = config[:tags].map!(&:to_sym)
@@ -15,12 +16,16 @@ module Cuddlefish
       @connection_spec = make_connection_spec
     end
 
-    %i(tags name host database adapter port username password).each do |method|
+    %i(name host database adapter port username password).each do |method|
       define_method(method) { @config[method] }
     end
 
     def matches?(desired_tags)
       (desired_tags - @tags).empty?
+    end
+
+    def connected?
+      !connection_pool.nil?
     end
 
     private
