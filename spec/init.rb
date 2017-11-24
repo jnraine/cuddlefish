@@ -10,38 +10,40 @@ require "database_cleaner"
 
 DatabaseCleaner.strategy = :truncation
 
-shard_specifications = {
-  test: [
-    { tags: ["foo", "feline", "canine"],
-      name: :shard_1,
-      host: ENV["TEST_MYSQL_HOST"] || "localhost",
-      port: ENV["TEST_MYSQL_PORT"] || 9506,
-      username: ENV["TEST_MYSQL_USER"] || "root",
-      password: ENV["TEST_MYSQL_PASSWORD"],
-      adapter: "mysql2",
-      database: "foo_db",
-    },
-    { tags: ["bar", "feline", "canine"],
-      name: :shard_2,
-      host: ENV["TEST_MYSQL_HOST"] || "localhost",
-      port: ENV["TEST_MYSQL_PORT"] || 9506,
-      username: ENV["TEST_MYSQL_USER"] || "root",
-      password: ENV["TEST_MYSQL_PASSWORD"],
-      adapter: "mysql2",
-      database: "bar_db",
-    },
-    { tags: ["honk"],
-      name: :the_mighty_honk,
-      host: ENV["TEST_MYSQL_HOST"] || "localhost",
-      port: ENV["TEST_MYSQL_PORT"] || 9506,
-      username: ENV["TEST_MYSQL_USER"] || "root",
-      password: ENV["TEST_MYSQL_PASSWORD"],
-      adapter: "mysql2",
-      database: "honk_db",
-    },
-  ],
-}.with_indifferent_access
-Cuddlefish.setup(shard_specifications)
+def setup
+  shard_specifications = {
+    test: [
+      { tags: ["foo", "feline", "canine"],
+        name: :shard_1,
+        host: ENV["TEST_MYSQL_HOST"] || "localhost",
+        port: ENV["TEST_MYSQL_PORT"] || 9506,
+        username: ENV["TEST_MYSQL_USER"] || "root",
+        password: ENV["TEST_MYSQL_PASSWORD"],
+        adapter: "mysql2",
+        database: "foo_db",
+      },
+      { tags: ["bar", "feline", "canine"],
+        name: :shard_2,
+        host: ENV["TEST_MYSQL_HOST"] || "localhost",
+        port: ENV["TEST_MYSQL_PORT"] || 9506,
+        username: ENV["TEST_MYSQL_USER"] || "root",
+        password: ENV["TEST_MYSQL_PASSWORD"],
+        adapter: "mysql2",
+        database: "bar_db",
+      },
+      { tags: ["honk"],
+        name: :the_mighty_honk,
+        host: ENV["TEST_MYSQL_HOST"] || "localhost",
+        port: ENV["TEST_MYSQL_PORT"] || 9506,
+        username: ENV["TEST_MYSQL_USER"] || "root",
+        password: ENV["TEST_MYSQL_PASSWORD"],
+        adapter: "mysql2",
+        database: "honk_db",
+      },
+    ],
+  }.with_indifferent_access
+  Cuddlefish.setup(shard_specifications)
+end
 
 def cleanup
   Cuddlefish.each_shard do

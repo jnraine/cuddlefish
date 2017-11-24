@@ -30,6 +30,14 @@ module Cuddlefish
     shard_manager.shards
   end
 
+  # Terminates all MySQL shard connections and forgets about all loaded shards.
+  def self.stop
+    each_shard do
+      ::ActiveRecord::Base.default_connection_handler.remove_connection(::ActiveRecord::Base)
+    end
+    @@shard_manager = Cuddlefish::ShardManager.new
+  end
+
   def self.current_shard_tags
     Thread.current[CURRENT_SHARD_TAGS_KEY] ||= []
   end

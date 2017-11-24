@@ -70,6 +70,7 @@ describe "Basic Cuddlefish functionality" do
     end
 
     it "uses the expected number of Mysql2::Client objects" do
+      GC.start  # Clean up any Mysql2::Clients created by earlier tests
       Cuddlefish.with_shard_tags(:foo)  { Cuddlefish::Cat.create!(name: "Blastocyst") }
       Cuddlefish.with_shard_tags(:bar)  { Cuddlefish::Dog.create!(name: "Chiaroscuro") }
       Cuddlefish.with_shard_tags(:honk) { Cuddlefish::Gouda.create!(name: "Coatrack") }
