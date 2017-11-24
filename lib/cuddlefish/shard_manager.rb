@@ -5,11 +5,13 @@ module Cuddlefish
   class InvalidShardSpecification < StandardError; end
 
   class ShardManager
+    include Cuddlefish::Helpers
+
     attr_reader :shards
 
     def initialize
       @shards = []
-      @shard_for_pool = {}   # FIXME: make this a thread-safe hash
+      @shard_for_pool = new_thread_safe_hash
     end
 
     # Creates & returns a new, disconnected shard based on the given specification.
@@ -48,6 +50,9 @@ module Cuddlefish
       shard
     end
 
+    # FIXME: Theoretically there could be an inter-thread race condition
+    # with these two methods. We should really have an exclusive lock
+    # around the bodies of these methods...
     def add_connection_pool(pool, shard)
       @shard_for_pool[pool] = shard
       shard.connection_pool = pool
