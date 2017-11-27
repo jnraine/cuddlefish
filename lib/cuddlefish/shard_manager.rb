@@ -1,5 +1,5 @@
-# A class which keeps track of all the user-defined shards and how they
-# connect to their ActiveRecord connection pools.
+# A class which keeps track of all the user-defined shards and which
+# ActiveRecord connection pools belong to them.
 
 module Cuddlefish
   class InvalidShardSpecification < StandardError; end

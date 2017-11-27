@@ -25,11 +25,6 @@ module Cuddlefish
       Cuddlefish.shard_manager.all_connection_pools
     end
 
-    def connection_pools_for_class(klass)
-      desired_tags = all_tags(klass)
-      Cuddlefish.shard_manager.matching_connected_shards(desired_tags).map(&:connection_pool)
-    end
-
     def retrieve_connection_pool(klass)
       pools = connection_pools_for_class(klass)
       case pools.count
@@ -67,6 +62,13 @@ module Cuddlefish
         tags_for_pool[pool] = (spec.config[:tags] || [])
         pool
       end
+    end
+
+    private
+
+    def connection_pools_for_class(klass)
+      desired_tags = all_tags(klass)
+      Cuddlefish.shard_manager.matching_connected_shards(desired_tags).map(&:connection_pool)
     end
 
     def all_tags(klass)
