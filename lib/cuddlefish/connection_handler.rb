@@ -56,7 +56,7 @@ module Cuddlefish
       end
     end
 
-    def remove_shard(shard)
+    def disconnect_shard(shard)
       pool = shard.connection_pool
       Cuddlefish.shard_manager.remove_connection_pool(pool)
       pool.disconnect!

@@ -49,7 +49,7 @@ module ActiveRecord
 
       connection_handler = ActiveRecord::Base.default_connection_handler
       Cuddlefish.shards.each do |shard|
-        connection_handler.remove_shard(shard)
+        connection_handler.disconnect_shard(shard)
         connection_handler.establish_connection(nil, shard.connection_spec)
       end
     end
