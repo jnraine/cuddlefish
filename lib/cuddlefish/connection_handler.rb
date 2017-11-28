@@ -48,23 +48,31 @@ module Cuddlefish
     # The arguments to this method changed between Rails 4.2 and 5.0.
     if rails_4?
       def establish_connection(_owner, spec)
-        shard = Cuddlefish.shard_manager.find_by_name(spec.config[:name])
-        if !shard.connected?
-          pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
-          Cuddlefish.shard_manager.add_connection_pool(pool, shard)
-        end
-        shard.connection_pool
+        actually_establish_connection(spec)
       end
     else
       def establish_connection(spec)
-        pool = super(spec)
-        FIXME
-        tags_for_pool[pool] = (spec.config[:tags] || [])
-        pool
+        actually_establish_connection(spec)
       end
     end
 
+    def remove_shard(shard)
+      pool = shard.connection_pool
+      Cuddlefish.shard_manager.remove_connection_pool(pool)
+      pool.disconnect!
+      pool.spec.config
+    end
+
     private
+
+    def actually_establish_connection(spec)
+      shard = Cuddlefish.shard_manager.find_by_name(spec.config[:name])
+      if !shard.connected?
+        pool = ::ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
+        Cuddlefish.shard_manager.add_connection_pool(pool, shard)
+      end
+      shard.connection_pool
+    end
 
     def connection_pools_for_class(klass)
       desired_tags = all_tags(klass)
