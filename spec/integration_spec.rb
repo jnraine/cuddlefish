@@ -221,4 +221,12 @@ describe "Basic Cuddlefish functionality" do
       end.to change { Cuddlefish::Cat.connection_handler.connection_pool_list.count }.from(3).to(2)
     end
   end
+
+  describe "gem loading" do
+    it "loads gem patches for gems in the Gemfile" do
+      allow(Gem).to receive(:loaded_specs).and_return(double(key?: true))
+      Cuddlefish.stop
+      expect { setup }.to raise_error(LoadError, /cannot load such file -- activerecord-import\/base/)
+    end
+  end
 end

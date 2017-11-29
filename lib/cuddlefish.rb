@@ -20,10 +20,20 @@ module Cuddlefish
   end
 
   def self.setup(db_specs)
+    # Create Shard objects for each of the shards in shards.yml.
     db_specs[Rails.env.to_s].each do |spec|
       shard_manager.add(spec)
     end
+
+    # Replace the standard AR connection handler with our own.
     ::ActiveRecord::Base.default_connection_handler = Cuddlefish::ConnectionHandler.new
+
+    # Load patches for specific gems.
+    gem_dir = "#{File.dirname(__FILE__)}/cuddlefish/gem_patches"
+    Dir.glob("#{gem_dir}/*.rb").each do |filename|
+      gem_name = filename.sub(/.*\/(\S+)\.rb$/, '\1')
+      require(filename) if Gem.loaded_specs.key?(gem_name)
+    end
   end
 
   def self.shards

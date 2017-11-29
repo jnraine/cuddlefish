@@ -22,37 +22,13 @@ module Cuddlefish
         @shard_tags = tags.map(&:to_sym)
         self.connection_specification_name = self if !rails_4?
       end
-    end
-  end
-end
 
-module ActiveRecord
-  class Base
-    # This overrides the `establish_connection` method from ActiveRecord::ConnectionHandling,
-    # which will close and re-open connections in an irritating way. At present we ignore the
-    # specification passed in and just reload all shards; in future versions we should
-    # probably go to some effort to reconnect only the requested database.
-    #
-    # The old code was:
-    #
-    #   def establish_connection(spec = nil)
-    #     spec     ||= DEFAULT_ENV.call.to_sym
-    #     resolver =   ConnectionAdapters::ConnectionSpecification::Resolver.new configurations
-    #     spec     =   resolver.spec(spec)
-    #
-    #     unless respond_to?(spec.adapter_method)
-    #       raise AdapterNotFound, "database configuration specifies nonexistent #{spec.config[:adapter]} adapter"
-    #     end
-    #
-    #     remove_connection
-    #     connection_handler.establish_connection self, spec
-    #   end
-
-    def self.establish_connection(_spec = nil)
-      connection_handler = ActiveRecord::Base.default_connection_handler
-      Cuddlefish.shards.each do |shard|
-        connection_handler.disconnect_shard(shard)
-        connection_handler.establish_connection(nil, shard.connection_spec)
+      def establish_connection(_spec = nil)
+        connection_handler = ::ActiveRecord::Base.default_connection_handler
+        Cuddlefish.shards.each do |shard|
+          connection_handler.disconnect_shard(shard)
+          connection_handler.establish_connection(nil, shard.connection_spec)
+        end
       end
     end
   end
