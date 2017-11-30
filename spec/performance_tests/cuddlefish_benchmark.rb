@@ -20,22 +20,22 @@ def unique_name(type)
 end
 
 $iterations.times do |i|
-  Cuddlefish.with_shard_tags(:foo) do
+  Cuddlefish.use_shard_tags(:foo) do
     Cuddlefish::Cat.create!(name: unique_name(:cat))
     Cuddlefish::Dog.create!(name: unique_name(:dog))
   end
 
-  Cuddlefish.with_shard_tags(:bar) do
+  Cuddlefish.use_shard_tags(:bar) do
     Cuddlefish::Cat.create!(name: unique_name(:cat))
     Cuddlefish::Dog.create!(name: unique_name(:dog))
   end
 
-  Cuddlefish.with_shard_tags(:honk) do
+  Cuddlefish.use_shard_tags(:honk) do
     Cuddlefish::Gouda.create!(name: unique_name(:gouda))
   end
 
   begin
-    Cuddlefish.with_shard_tags(:feline, :honk) do
+    Cuddlefish.use_shard_tags(:feline, :honk) do
       Cuddlefish::Cat.count
     end
   rescue Cuddlefish::NoMatchingConnections
@@ -43,7 +43,7 @@ $iterations.times do |i|
   end
 
   begin
-    Cuddlefish.with_shard_tags(:feline) do
+    Cuddlefish.use_shard_tags(:feline) do
       Cuddlefish::Cat.create!(name: unique_name(:cat))
     end
   rescue Cuddlefish::TooManyMatchingConnections

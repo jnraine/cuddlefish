@@ -70,7 +70,7 @@ module ActiveRecord
       private
 
       def run_migration_on_shard(direction, migration, target_version)
-        Cuddlefish.with_exact_shard_tags(*migration.tags) do
+        Cuddlefish.force_shard_tags(*migration.tags) do
           new(direction, [migration], target_version).migrate
         end
       end

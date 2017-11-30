@@ -41,23 +41,23 @@ describe "Cuddlefish migration support" do
 
   describe "#up/#down" do
     it "run the migrations on the correct shards" do
-      Cuddlefish.with_shard_tags(:foo) do
+      Cuddlefish.use_shard_tags(:foo) do
         Cuddlefish::Cat.create!(name: "Spaetzle")
       end
-      Cuddlefish.with_shard_tags(:bar) do
+      Cuddlefish.use_shard_tags(:bar) do
         Cuddlefish::Dog.create!(name: "Knockwurst")
       end
 
       ActiveRecord::Migrator.up(ActiveRecord::Migrator.migrations_paths)
 
-      Cuddlefish.with_shard_tags(:foo) do
+      Cuddlefish.use_shard_tags(:foo) do
         expect(Cuddlefish::Cat.first.lives_remaining).to eq 69105
         expect {
           Cuddlefish::Dog.first.flea_count
         }.to raise_error(NoMethodError, /undefined method `flea_count'/)
       end
 
-      Cuddlefish.with_shard_tags(:bar) do
+      Cuddlefish.use_shard_tags(:bar) do
         expect(Cuddlefish::Dog.first.flea_count).to eq 31337
         expect {
           Cuddlefish::Cat.first.lives_remaining
@@ -70,14 +70,14 @@ describe "Cuddlefish migration support" do
 
   describe "#run" do
     it "runs the migrations on the correct shards" do
-      Cuddlefish.with_shard_tags(:foo) do
+      Cuddlefish.use_shard_tags(:foo) do
         Cuddlefish::Cat.create!(name: "Paolo")
         ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170101020304)
         expect(Cuddlefish::Cat.first.lives_remaining).to eq 69105
         ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170101020304)
       end
 
-      Cuddlefish.with_shard_tags(:bar) do
+      Cuddlefish.use_shard_tags(:bar) do
         Cuddlefish::Dog.create!(name: "Francesca")
         ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
         expect(Cuddlefish::Dog.first.flea_count).to eq 31337

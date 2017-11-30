@@ -54,8 +54,8 @@ module Cuddlefish
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match all of the tags in "tags".
-  def self.with_shard_tags(*tags)
-    raise ArgumentError.new("No tags specified for with_shard_tags!") if tags.empty?
+  def self.use_shard_tags(*tags)
+    raise ArgumentError.new("No tags specified for use_shard_tags!") if tags.empty?
     old_tags = current_shard_tags
     Thread.current[CURRENT_SHARD_TAGS_KEY] = (old_tags | tags.flatten)
     yield
@@ -65,8 +65,8 @@ module Cuddlefish
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match only the tags in "tags", ignoring the restrictions imposed by any
-  # enclosing `with_shard_tags` calls or tags on models.
-  def self.with_exact_shard_tags(*tags)
+  # enclosing `use_shard_tags` calls or tags on models.
+  def self.force_shard_tags(*tags)
     old_tags = current_shard_tags
     Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
     Thread.current[CLASS_TAGS_DISABLED_KEY] = true
@@ -78,8 +78,8 @@ module Cuddlefish
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match only the tags in "tags" (and any model-specific tags), ignoring
-  # the restrictions imposed by any enclosing `with_shard_tags` calls.
-  def self.with_only_shard_tags(*tags)
+  # the restrictions imposed by any enclosing `use_shard_tags` calls.
+  def self.replace_shard_tags(*tags)
     old_tags = current_shard_tags
     Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
     yield
@@ -98,11 +98,11 @@ module Cuddlefish
   end
 
   # Executes the block repeatedly, once for each tag you give it. Each time
-  # it's wrapped in a `with_shard_tags` call for that individual tag.
+  # it's wrapped in a `use_shard_tags` call for that individual tag.
   # TO DO: Have it return an enumerator so we can chain `.map`, etc.
   def self.each_tag(*tags)
     tags.flatten.each do |tag|
-      with_shard_tags(tag) do
+      use_shard_tags(tag) do
         yield
       end
     end
@@ -126,7 +126,7 @@ module Cuddlefish
   def self.iterate_over_shards(method, tags)
     shard_list = shard_manager.matching_connected_shards(tags.flatten)
     shard_list.public_send(method) do |shard|
-      with_exact_shard_tags(shard.tags) do
+      force_shard_tags(shard.tags) do
         yield
       end
     end

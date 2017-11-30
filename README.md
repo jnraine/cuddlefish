@@ -31,7 +31,7 @@ development:
 Then you can do something like this in your app:
 
 ```ruby
-Cuddlefish.with_shard_tags(:host_1) do
+Cuddlefish.use_shard_tags(:host_1) do
   # your code here
 end
 ```
@@ -44,7 +44,7 @@ class MyModel < ActiveRecord::Base
 end
 ```
 
-Then all that model's queries will be restricted to shards with the `bar` tag. Cuddlefish picks the connection to use by combining all the tags from block methods like `with_shard_tags` with the tags from the ActiveRecord model that's making the query. (If you give it a contradictory set of tags and there are no connections which match all those tags, it throws an exception. Similarly, if a query matches multiple possible connections, it throws an exception.)
+Then all that model's queries will be restricted to shards with the `bar` tag. Cuddlefish picks the connection to use by combining all the tags from block methods like `use_shard_tags` with the tags from the ActiveRecord model that's making the query. (If you give it a contradictory set of tags and there are no connections which match all those tags, it throws an exception. Similarly, if a query matches multiple possible connections, it throws an exception.)
 
 The code is fairly small and straightforward, so you can see how it works without too much brain-bending.
 
@@ -80,7 +80,7 @@ These are the easiest way to work with Cuddlefish. You pass these methods a bloc
 ```ruby
 # Restricts all ActiveRecord queries inside the block to shards with both
 # the `global` and `shard1` tags.
-Cuddlefish.with_shard_tags(:global, :shard1) do
+Cuddlefish.use_shard_tags(:global, :shard1) do
   MyRecord.find(...)
 end
 
@@ -88,19 +88,19 @@ end
 # `global` tag, ignoring any tag restrictions set outside the block by
 # other Cuddlefish methods but honouring tags set on specific models by
 # `set_shard_tags`.
-Cuddlefish.with_only_shard_tags(:global) do
+Cuddlefish.replace_shard_tags(:global) do
   MyRecord.find(...)
 end
 
 # Restricts all ActiveRecord queries inside the block to shards with the
 # `global` tag, ignoring any tag restrictions set outside the block by
 # other Cuddlefish methods or by `set_shard_tags`.
-Cuddlefish.with_exact_shard_tags(:global) do
+Cuddlefish.force_shard_tags(:global) do
   MyRecord.find(...)
 end
 
 # Executes the block repeatedly, once for each tag you give it. Each time
-# it's wrapped in a `with_shard_tags` call for that individual tag.
+# it's wrapped in a `use_shard_tags` call for that individual tag.
 # Useful for performing a task on multiple connections at once.
 Cuddlefish.each_tag(:shard_1, :shard_2) do
   # do things
