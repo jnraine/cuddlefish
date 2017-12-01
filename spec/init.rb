@@ -8,6 +8,7 @@ require "mysql2"
 require "cuddlefish"
 require "database_cleaner"
 
+ENV["RAILS_ENV"] ||= "test"
 DatabaseCleaner.strategy = :truncation
 
 def setup
