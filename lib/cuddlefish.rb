@@ -69,12 +69,13 @@ module Cuddlefish
   # enclosing `use_shard_tags` calls or tags on models.
   def self.force_shard_tags(*tags)
     old_tags = current_shard_tags
+    was_disabled = Thread.current[CLASS_TAGS_DISABLED_KEY]
     Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
     Thread.current[CLASS_TAGS_DISABLED_KEY] = true
     yield
   ensure
     Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
-    Thread.current[CLASS_TAGS_DISABLED_KEY] = false
+    Thread.current[CLASS_TAGS_DISABLED_KEY] = was_disabled
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
