@@ -1,8 +1,4 @@
-module Rails
-  def self.env
-    "test"
-  end
-end
+ENV["RAILS_ENV"] ||= "test"
 
 require "rubygems"
 

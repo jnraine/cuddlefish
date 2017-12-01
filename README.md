@@ -66,10 +66,11 @@ Or install it yourself as:
 
 ## Configuration
 
-Check out the example `shards.yml` file in this repository to see how to set up your shards. Then, in your app's initializers, call this to load all the shard data and hook Cuddlefish into ActiveRecord:
+Check out the example `shards.yml` file in this repository to see how to set up your shards. Then, in a file called `config/cuddlefish.rb`, call this to load all the shard data and hook Cuddlefish into ActiveRecord:
 ```ruby
 Cuddlefish.start("shards.yml")
 ```
+cuddlefish will load your `config/cuddlefish.rb` file at startup; you don't have to explicitly require it yourself.
 
 ## Usage
 
@@ -121,7 +122,7 @@ end
 
 ### Other methods
 
-```
+```ruby
 # After this, all subsequent queries will be restricted by the :foo and :bar tags.
 # Use with care.
 Cuddlefish.add_shard_tags(:foo, :bar)
