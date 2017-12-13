@@ -1,4 +1,6 @@
 require "bundler/gem_tasks"
+import "lib/tasks/db.rake"
+
 task :default => :spec
 
 task :spec do
