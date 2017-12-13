@@ -64,7 +64,9 @@ describe "Cuddlefish migration support" do
         }.to raise_error(NoMethodError, /undefined method `lives_remaining'/)
       end
 
-      ActiveRecord::Migrator.down(ActiveRecord::Migrator.migrations_paths)
+      expect do
+        ActiveRecord::Migrator.down(ActiveRecord::Migrator.migrations_paths)
+      end.to output.to_stdout
     end
   end
 
@@ -72,15 +74,25 @@ describe "Cuddlefish migration support" do
     it "runs the migrations on the correct shards" do
       Cuddlefish.use_shard_tags(:foo) do
         Cuddlefish::Cat.create!(name: "Paolo")
-        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170101020304)
+
+        expect do
+          ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170101020304)
+        end.to output.to_stdout
+
         expect(Cuddlefish::Cat.first.lives_remaining).to eq 69105
+
         ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170101020304)
       end
 
       Cuddlefish.use_shard_tags(:bar) do
         Cuddlefish::Dog.create!(name: "Francesca")
-        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
+
+        expect do
+          ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
+        end.to output.to_stdout
+
         expect(Cuddlefish::Dog.first.flea_count).to eq 31337
+
         ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170102030405)
       end
     end

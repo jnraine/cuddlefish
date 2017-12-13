@@ -171,13 +171,23 @@ This is currently a pre-pre-pre-alpha version that hasn't seen production yet. Y
 * Rename lots of things. The names are pretty bad.
 * Improve the performance of looking up connections by tags, with an eye to generating minimal garbage. At present, it's about 12% slower at a simple "create a bunch of records on different shards" benchmarks compared to straight ActiveRecord; I bet we can get that under 10% without too much difficulty.
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/fimmtiu/cuddlefish.
+
+### Getting started
+
+```bash
+$ bin/setup  # install dependencies and build test database
+$ rake       # run tests
+$ rake rerun # run tests continuously on file changes
+```
+
+You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+### Releasing
+
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## License
 
