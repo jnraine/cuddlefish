@@ -1,22 +1,29 @@
 # Support for running ActiveRecord migrations on their appropriate shards.
+module Cuddlefish
+  module ActiveRecord
+    module MigrationProxy
+      def tags
+        @tags = Cuddlefish.tags_for_migration.call(self).map(&:to_sym) if !defined?(@tag)
+        @tags
+      end
+    end
+
+    module Migration
+      mattr_accessor(:shard_tags) { [] }
+
+      def announce(message)
+        host, db = connection.raw_connection.query_options.values_at(:host, :database)
+        super("[#{host}.#{db}] #{message}")
+      end
+    end
+  end
+end
+
+ActiveRecord::Migration.prepend(Cuddlefish::ActiveRecord::Migration)
+ActiveRecord::MigrationProxy.prepend(Cuddlefish::ActiveRecord::MigrationProxy)
+# ActiveRecord::Migrator.singleton_class.prepend(Cuddlefish::ActiveRecord::Migrator)
 
 module ActiveRecord
-  class MigrationProxy
-    def tags
-      @tags = Cuddlefish.tags_for_migration.call(self).map(&:to_sym) if !defined?(@tag)
-      @tags
-    end
-  end
-
-  class Migration
-    alias_method :original_announce, :announce
-
-    def announce(message)
-      host, db = connection.raw_connection.query_options.values_at(:host, :database)
-      original_announce("[#{host}.#{db}] #{message}")
-    end
-  end
-
   class Migrator
     class << self
 
