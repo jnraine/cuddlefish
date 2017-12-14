@@ -11,8 +11,8 @@ require "database_cleaner"
 ENV["RAILS_ENV"] ||= "test"
 DatabaseCleaner.strategy = :truncation
 
-def setup
-  shard_specifications = {
+def shard_specifications
+  {
     test: [
       { tags: ["foo", "feline", "canine"],
         name: :shard_1,
@@ -43,6 +43,9 @@ def setup
       },
     ],
   }.with_indifferent_access
+end
+
+def setup
   Cuddlefish.setup(shard_specifications)
 end
 
@@ -50,6 +53,20 @@ def cleanup
   Cuddlefish.each_shard do
     DatabaseCleaner.clean
   end
+end
+
+def rebuild_schema
+  @cleanup_client ||= begin
+    cleanup_config = shard_specifications.dig(:test, 0).slice(:host, :port, :username, :password)
+    Mysql2::Client.new(cleanup_config.merge(flags: Mysql2::Client::MULTI_STATEMENTS))
+  end
+
+  @schema_statements ||= begin
+    schema = File.read("#{File.dirname(__FILE__)}/db_setup.sql")
+    schema.split(";").map(&:strip).reject(&:empty?)
+  end
+
+  @schema_statements.each {|statement| @cleanup_client.query(statement) }
 end
 
 module Cuddlefish

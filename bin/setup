@@ -5,5 +5,3 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 set -vx
 
 bundle install
-echo "Setting up database (you will be asked for your root MySQL password)"
-mysql --user root --password < "${DIR}/../spec/db_setup.sql"

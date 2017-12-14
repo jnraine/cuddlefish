@@ -12,6 +12,12 @@ ActiveRecord::Migration.verbose = false
 RSpec.configure do |config|
   config.include Cuddlefish::Helpers
 
+  config.before(:all) do
+    setup
+    rebuild_schema
+    Cuddlefish.stop
+  end
+
   config.before(:each) do
     setup
     cleanup

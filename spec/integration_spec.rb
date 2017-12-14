@@ -78,7 +78,8 @@ describe "Basic Cuddlefish functionality" do
       ObjectSpace.each_object do |obj|
         databases << obj.query_options[:database] if obj.is_a?(Mysql2::Client)
       end
-      expect(databases).to match_array ["foo_db", "bar_db", "honk_db"]
+      # nil element is from our `rebuild_schema` cleanup method
+      expect(databases).to match_array ["foo_db", "bar_db", "honk_db", nil]
     end
   end
 
