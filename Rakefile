@@ -8,5 +8,5 @@ task :spec do
 end
 
 task :rerun do
-  exec("rerun --ignore \"coverage/*\" rspec")
+  exec("rerun -x --ignore \"coverage/*\" rspec")
 end
