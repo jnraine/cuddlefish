@@ -178,9 +178,9 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/fimmti
 ### Getting started
 
 ```bash
-$ bin/setup  # install dependencies and build test database
-$ rake       # run tests
-$ rake rerun # run tests continuously on file changes
+$ bin/setup # install dependencies and build test database
+$ rspec     # run tests
+$ rake      # run tests continuously on file changes
 ```
 
 You can also run `bin/console` for an interactive prompt that will allow you to experiment.
