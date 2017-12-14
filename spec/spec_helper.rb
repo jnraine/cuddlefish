@@ -6,6 +6,9 @@ SimpleCov.start
 $: << "."
 require "spec/init"
 
+# Turn off migration output to STDOUT
+ActiveRecord::Migration.verbose = false
+
 RSpec.configure do |config|
   config.include Cuddlefish::Helpers
 
