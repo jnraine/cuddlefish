@@ -71,7 +71,12 @@ module ActiveRecord
 
       def run_migration_on_shard(direction, migration, target_version)
         Cuddlefish.force_shard_tags(*migration.tags) do
-          new(direction, [migration], target_version).migrate
+          migrator = new(direction, [migration], target_version)
+          if target_version
+            migrator.run
+          else
+            migrator.migrate
+          end
         end
       end
     end
