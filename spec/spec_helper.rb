@@ -13,17 +13,24 @@ RSpec.configure do |config|
   config.include Cuddlefish::Helpers
 
   config.before(:all) do
-    setup
-    rebuild_schema
-    Cuddlefish.stop
+    begin
+      setup
+      rebuild_schema
+      Cuddlefish.stop
+    rescue => e
+      raise <<~ERROR
+before(:all) raised an error
+
+#{e.message}
+#{e.backtrace.join("\n")}
+      ERROR
+    end
   end
 
-  config.before(:each) do
+  config.around do |example|
     setup
     cleanup
-  end
-
-  config.after(:each) do
+    example.run
     Cuddlefish.stop
   end
 end
