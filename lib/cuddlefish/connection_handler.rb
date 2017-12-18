@@ -81,7 +81,7 @@ module Cuddlefish
 
     def all_tags(klass)
       tags = Cuddlefish.current_shard_tags
-      tags = (tags | klass.shard_tags) if !Thread.current[Cuddlefish::CLASS_TAGS_DISABLED_KEY]
+      tags = (tags | klass.shard_tags) if !Cuddlefish.class_tags_disabled?
       tags
     end
   end

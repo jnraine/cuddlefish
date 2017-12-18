@@ -48,12 +48,13 @@ describe "Cuddlefish migration support" do
     it "run the migrations on the correct shards" do
       Cuddlefish.use_shard_tags(:foo) do
         Cuddlefish::Cat.create!(name: "Spaetzle")
-      end
-      Cuddlefish.use_shard_tags(:bar) do
-        Cuddlefish::Dog.create!(name: "Knockwurst")
+        ActiveRecord::Migrator.up(ActiveRecord::Migrator.migrations_paths)
       end
 
-      ActiveRecord::Migrator.up(ActiveRecord::Migrator.migrations_paths)
+      Cuddlefish.use_shard_tags(:bar) do
+        Cuddlefish::Dog.create!(name: "Knockwurst")
+        ActiveRecord::Migrator.up(ActiveRecord::Migrator.migrations_paths)
+      end
 
       Cuddlefish.use_shard_tags(:foo) do
         expect(Cuddlefish::Cat.first.lives_remaining).to eq 69105
@@ -68,8 +69,6 @@ describe "Cuddlefish migration support" do
           Cuddlefish::Cat.first.lives_remaining
         }.to raise_error(NoMethodError, /undefined method `lives_remaining'/)
       end
-
-      ActiveRecord::Migrator.down(ActiveRecord::Migrator.migrations_paths)
     end
   end
 
@@ -85,15 +84,14 @@ describe "Cuddlefish migration support" do
         ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20010101010000)
       end
 
-      Cuddlefish.use_shard_tags(:bar) { Cuddlefish::Dog.create!(name: "Francesca") }
-
-      ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
+      Cuddlefish.use_shard_tags(:bar) do
+        Cuddlefish::Dog.create!(name: "Francesca")
+        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
+      end
 
       Cuddlefish.use_shard_tags(:bar) do
         expect(Cuddlefish::Dog.first.flea_count).to eq 31337
       end
-
-      ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170102030405)
     end
   end
 end

@@ -9,10 +9,8 @@ require "cuddlefish/shard_manager"
 require "cuddlefish/version"
 
 module Cuddlefish
-  CURRENT_SHARD_TAGS_KEY = :"Cuddlefish shard tags"
+  STATE_KEY = "Cuddlefish state"
   CLASS_TAGS_DISABLED_KEY = :"Cuddlefish class tags disabled"
-  OLD_TAGS_KEY = :"Cuddlefish old tags"
-  PREVIOUSLY_DISABLED_KEY = :"Cuddlefish previously disabled"
 
   mattr_reader(:shard_manager) { Cuddlefish::ShardManager.new }
   mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
@@ -20,6 +18,10 @@ module Cuddlefish
   # Loads the shards config file and hooks Cuddlefish into ActiveRecord.
   def self.start(filename)
     setup(YAML.load_file(filename))
+  end
+
+  def self.class_tags_disabled?
+    state.class_tags_disabled
   end
 
   def self.setup(db_specs)
@@ -52,11 +54,11 @@ module Cuddlefish
   end
 
   def self.current_shard_tags
-    Thread.current[CURRENT_SHARD_TAGS_KEY] ||= []
+    state.current_shard_tags ||= []
   end
 
   def self.current_shard_tags=(tags)
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags
+    state.current_shard_tags = tags
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
@@ -81,15 +83,15 @@ module Cuddlefish
   end
 
   def self.force_shard_tags!(*tags)
-    Thread.current[PREVIOUSLY_DISABLED_KEY] = Thread.current[CLASS_TAGS_DISABLED_KEY]
-    Thread.current[OLD_TAGS_KEY] = current_shard_tags
+    state.previous_class_tags_disabled = state.class_tags_disabled
+    state.old_tags = current_shard_tags
     self.current_shard_tags = tags.flatten
-    Thread.current[CLASS_TAGS_DISABLED_KEY] = true
+    state.class_tags_disabled = true
   end
 
   def self.unforce_shard_tags!
-    self.current_shard_tags = Thread.current[OLD_TAGS_KEY]
-    Thread.current[CLASS_TAGS_DISABLED_KEY] = Thread.current[PREVIOUSLY_DISABLED_KEY]
+    self.current_shard_tags = state.old_tags
+    state.class_tags_disabled = state.previous_class_tags_disabled
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
@@ -137,9 +139,11 @@ module Cuddlefish
     iterate_over_shards(:map, tags, &block)
   end
 
-  private
+  private_class_method def self.state
+    Thread.current[STATE_KEY] ||= Struct.new(:current_shard_tags, :class_tags_disabled, :old_tags, :previous_class_tags_disabled).new
+  end
 
-  def self.iterate_over_shards(method, tags)
+  private_class_method def self.iterate_over_shards(method, tags)
     shard_list = shard_manager.matching_connected_shards(tags.flatten)
     shard_list.public_send(method) do |shard|
       force_shard_tags(shard.tags) do
