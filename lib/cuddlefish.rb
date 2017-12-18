@@ -13,7 +13,6 @@ module Cuddlefish
   CLASS_TAGS_DISABLED_KEY = :"Cuddlefish class tags disabled"
 
   mattr_reader(:shard_manager) { Cuddlefish::ShardManager.new }
-  mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
 
   # Loads the shards config file and hooks Cuddlefish into ActiveRecord.
   def self.start(filename)

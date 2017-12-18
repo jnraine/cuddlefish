@@ -58,7 +58,7 @@ end
 def rebuild_schema
   @cleanup_client ||= begin
     cleanup_config = shard_specifications.dig(:test, 0).slice(:host, :port, :username, :password)
-    Mysql2::Client.new(cleanup_config.merge(flags: Mysql2::Client::MULTI_STATEMENTS))
+    Mysql2::Client.new(cleanup_config)
   end
 
   @schema_statements ||= begin
