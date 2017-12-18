@@ -209,6 +209,17 @@ describe "Basic Cuddlefish functionality" do
     end
   end
 
+  describe "force shard tags (non-block form)" do
+    before { Cuddlefish.force_shard_tags!(:honk) }
+    after { Cuddlefish.unforce_shard_tags! }
+
+    it "requires specific shard tags for subsequent database calls" do
+      expect do
+        Cuddlefish::Dog.first
+      end.to raise_error(ActiveRecord::StatementInvalid, /Table 'honk_db.dogs' doesn't exist/)
+    end
+  end
+
   describe "connection handler" do
     it "starts with one pool for each shard" do
       expect(Cuddlefish::Cat.connection_handler.connection_pool_list.count).to eq 3

@@ -15,13 +15,15 @@ module Cuddlefish
     rake_tasks do
       load "#{File.dirname(__FILE__)}/../tasks/db.rake"
 
-      Rake::Task["db:create"].enhance do
-        Rake::Task["cuddlefish:db:create"].invoke
-      end
+      Rake::Task["db:create"].enhance { Rake::Task["cuddlefish:db:create"].invoke }
+      Rake::Task["db:drop"].enhance { Rake::Task["cuddlefish:db:drop"].invoke }
 
-      Rake::Task["db:drop"].enhance do
-        Rake::Task["cuddlefish:db:drop"].invoke
-      end
+      Rake::Task["db:migrate"].enhance(["cuddlefish:force_shard_tags"])
+      Rake::Task["db:migrate:up"].enhance(["cuddlefish:force_shard_tags"])
+      Rake::Task["db:migrate:down"].enhance(["cuddlefish:force_shard_tags"])
+      Rake::Task["db:migrate:redo"].enhance(["cuddlefish:force_shard_tags"])
+      Rake::Task["db:migrate:rollback"].enhance(["cuddlefish:force_shard_tags"])
+      Rake::Task["db:migrate:status"].enhance(["cuddlefish:force_shard_tags"])
     end
   end
 end

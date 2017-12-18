@@ -2,22 +2,25 @@ require "spec_helper"
 require "fileutils"
 
 describe "Cuddlefish migration support" do
-  let(:base_dir) { "/tmp/cuddlefish-db/migrate" }
-
-  before(:all) do
-    Cuddlefish.tags_for_migration = lambda do |migration|
-      raise "wtf: #{migration.filename}" if migration.filename !~ /\/(\w+)\/\w+\.rb$/
-      [$1]
-    end
+  # These specs change the schema.
+  # Make sure it is in an expected state before and after.
+  around do |example|
+    rebuild_schema
+    example.run
+    rebuild_schema
   end
+
+  let(:base_dir) { "/tmp/cuddlefish-db/migrate" }
 
   before do
     FileUtils.rm_rf(base_dir)
 
     FileUtils.mkdir_p("#{base_dir}/foo")
-    File.open("#{base_dir}/foo/20170101020304_do_some_stuff.rb", "w") do |f|
+    File.open("#{base_dir}/foo/20010101010000_do_some_stuff.rb", "w") do |f|
       f.puts <<~MIGRATION
         class DoSomeStuff < ActiveRecord::Migration
+          self.shard_tags = [:foo]
+
           def change
             add_column :cats, :lives_remaining, :integer, default: 69105
           end
@@ -29,6 +32,8 @@ describe "Cuddlefish migration support" do
     File.open("#{base_dir}/bar/20170102030405_do_other_stuff.rb", "w") do |f|
       f.puts <<~MIGRATION
         class DoOtherStuff < ActiveRecord::Migration
+          self.shard_tags = [:bar]
+
           def change
             add_column :dogs, :flea_count, :integer, default: 31337
           end
@@ -73,22 +78,22 @@ describe "Cuddlefish migration support" do
       Cuddlefish.use_shard_tags(:foo) do
         Cuddlefish::Cat.create!(name: "Paolo")
 
-        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170101020304)
+        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20010101010000)
 
         expect(Cuddlefish::Cat.first.lives_remaining).to eq 69105
 
-        ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170101020304)
+        ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20010101010000)
       end
+
+      Cuddlefish.use_shard_tags(:bar) { Cuddlefish::Dog.create!(name: "Francesca") }
+
+      ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
 
       Cuddlefish.use_shard_tags(:bar) do
-        Cuddlefish::Dog.create!(name: "Francesca")
-
-        ActiveRecord::Migrator.run(:up, ActiveRecord::Migrator.migrations_paths, 20170102030405)
-
         expect(Cuddlefish::Dog.first.flea_count).to eq 31337
-
-        ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170102030405)
       end
+
+      ActiveRecord::Migrator.run(:down, ActiveRecord::Migrator.migrations_paths, 20170102030405)
     end
   end
 end

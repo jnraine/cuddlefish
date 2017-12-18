@@ -9,8 +9,10 @@ require "cuddlefish/shard_manager"
 require "cuddlefish/version"
 
 module Cuddlefish
-  CURRENT_SHARD_TAGS_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} shard tags"
-  CLASS_TAGS_DISABLED_KEY = :"Cuddlefish v#{Cuddlefish::VERSION} class tags disabled"
+  CURRENT_SHARD_TAGS_KEY = :"Cuddlefish shard tags"
+  CLASS_TAGS_DISABLED_KEY = :"Cuddlefish class tags disabled"
+  OLD_TAGS_KEY = :"Cuddlefish old tags"
+  PREVIOUSLY_DISABLED_KEY = :"Cuddlefish previously disabled"
 
   mattr_reader(:shard_manager) { Cuddlefish::ShardManager.new }
   mattr_accessor(:tags_for_migration) { lambda { |_| [] } }
@@ -53,28 +55,41 @@ module Cuddlefish
     Thread.current[CURRENT_SHARD_TAGS_KEY] ||= []
   end
 
+  def self.current_shard_tags=(tags)
+    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags
+  end
+
   # Restricts all ActiveRecord queries inside the block to shards which
   # match all of the tags in "tags".
   def self.use_shard_tags(*tags)
     raise ArgumentError.new("No tags specified for use_shard_tags!") if tags.empty?
     old_tags = current_shard_tags
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = (old_tags | tags.flatten)
+    self.current_shard_tags = (old_tags | tags.flatten)
     yield
   ensure
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
+    self.current_shard_tags = old_tags
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
   # match only the tags in "tags", ignoring the restrictions imposed by any
   # enclosing `use_shard_tags` calls or tags on models.
   def self.force_shard_tags(*tags)
-    old_tags = current_shard_tags
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
-    Thread.current[CLASS_TAGS_DISABLED_KEY] = true
+    force_shard_tags!(*tags)
     yield
   ensure
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
-    Thread.current[CLASS_TAGS_DISABLED_KEY] = false
+    unforce_shard_tags!
+  end
+
+  def self.force_shard_tags!(*tags)
+    Thread.current[PREVIOUSLY_DISABLED_KEY] = Thread.current[CLASS_TAGS_DISABLED_KEY]
+    Thread.current[OLD_TAGS_KEY] = current_shard_tags
+    self.current_shard_tags = tags.flatten
+    Thread.current[CLASS_TAGS_DISABLED_KEY] = true
+  end
+
+  def self.unforce_shard_tags!
+    self.current_shard_tags = Thread.current[OLD_TAGS_KEY]
+    Thread.current[CLASS_TAGS_DISABLED_KEY] = Thread.current[PREVIOUSLY_DISABLED_KEY]
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
@@ -82,20 +97,20 @@ module Cuddlefish
   # the restrictions imposed by any enclosing `use_shard_tags` calls.
   def self.replace_shard_tags(*tags)
     old_tags = current_shard_tags
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = tags.flatten
+    self.current_shard_tags = tags.flatten
     yield
   ensure
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = old_tags
+    self.current_shard_tags = old_tags
   end
 
   def self.add_shard_tags(*tags)
     raise ArgumentError.new("No tags specified for add_shard_tags!") if tags.empty?
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = (current_shard_tags | tags.flatten)
+    self.current_shard_tags = (current_shard_tags | tags.flatten)
   end
 
   def self.remove_shard_tags(*tags)
     raise ArgumentError.new("No tags specified for remove_shard_tags!") if tags.empty?
-    Thread.current[CURRENT_SHARD_TAGS_KEY] = (current_shard_tags - tags.flatten)
+    self.current_shard_tags = (current_shard_tags - tags.flatten)
   end
 
   # Executes the block repeatedly, once for each tag you give it. Each time

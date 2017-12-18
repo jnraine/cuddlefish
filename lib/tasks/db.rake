@@ -1,5 +1,10 @@
 # Move this into cuddlefish
 namespace :cuddlefish do
+  task force_shard_tags: :environment do
+    shard_tags = ENV.fetch("SHARD_TAGS").split(",").map(&:to_sym)
+    Cuddlefish.force_shard_tags!(shard_tags)
+  end
+
   namespace :db do
     desc "Create databases for every configured shard"
     task :create do
