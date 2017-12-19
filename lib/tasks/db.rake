@@ -55,21 +55,25 @@ namespace :cuddlefish do
   namespace :db do
     desc "Create databases for every configured shard"
     task :create do
-      cuddlefish_config = YAML.load(Rails.root.join("config/shards.yml").read)
-      cuddlefish_config.each do |_env, shard_config|
-        shard_config.each do |shard_config|
-          ActiveRecord::Tasks::DatabaseTasks.create(shard_config)
-        end
+      Cuddlefish::DatabaseTasks.create(Rails.root.join("config/shards.yml").to_s)
+    end
+
+    namespace :create do
+      desc "Create databases for every configured shard in all environments"
+      task :all do
+        Cuddlefish::DatabaseTasks.create_all(Rails.root.join("config/shards.yml").to_s)
       end
     end
 
     desc "Drop databases for every configured shard"
     task :drop do
-      cuddlefish_config = YAML.load(Rails.root.join("config/shards.yml").read)
-      cuddlefish_config.each do |_env, shard_config|
-        shard_config.each do |shard_config|
-          ActiveRecord::Tasks::DatabaseTasks.drop(shard_config)
-        end
+      Cuddlefish::DatabaseTasks.drop(Rails.root.join("config/shards.yml").to_s)
+    end
+
+    desc "Drop databases for every configured shard in all environments"
+    namespace :drop do
+      task :all do
+        Cuddlefish::DatabaseTasks.drop_all(Rails.root.join("config/shards.yml").to_s)
       end
     end
   end

@@ -17,6 +17,9 @@ module Cuddlefish
 
       Rake::Task["db:create"].enhance { Rake::Task["cuddlefish:db:create"].invoke }
       Rake::Task["db:drop"].enhance { Rake::Task["cuddlefish:db:drop"].invoke }
+      Rake::Task["db:create:all"].enhance { Rake::Task["cuddlefish:db:create:all"].invoke }
+      Rake::Task["db:drop:all"].enhance { Rake::Task["cuddlefish:db:drop:all"].invoke }
+
       Rake::Task["db:migrate"].enhance(["cuddlefish:force_shard_tags"]) { Rake::Task["cuddlefish:force_next_shard"].invoke }
 
       # Eventually, upgrade the built-in rake tasks as follows:
