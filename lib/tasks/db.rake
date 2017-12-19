@@ -25,6 +25,33 @@ namespace :cuddlefish do
     end
   end
 
+  task require_unique_shard: :environment do
+    if ENV.key?("SHARD_TAGS")
+      tags = ENV.fetch("SHARD_TAGS").split(",").map(&:to_sym)
+      matching_shards = Cuddlefish.shards.select do |shard|
+        tags.all? {|tag| shard.tags.include?(tag) }
+      end
+
+      case matching_shards.length
+      when 0 then raise "No matching shard found for shard tags: #{shard_tags.inspect}"
+      when 1 then Cuddlefish.force_shard_tags!(tags)
+      else
+        raise "More than one shard found for shard tags (must match only one): #{tags.inspect}"
+      end
+    else
+      raise <<~MESSAGE
+        You must specify a shard to run this task on by setting SHARD_TAGS.
+        Check config/shards.yml for information on each shard.
+
+        For example:
+
+        rake db:migrate:down VERSION=20171219064114 SHARD_TAGS=iris
+        rake db:migrate:up VERSION=20171219064114 SHARD_TAGS=themis
+        rake db:migrate:redo SHARD_TAGS=common,shard_0
+      MESSAGE
+    end
+  end
+
   namespace :db do
     desc "Create databases for every configured shard"
     task :create do

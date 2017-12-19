@@ -17,13 +17,22 @@ module Cuddlefish
 
       Rake::Task["db:create"].enhance { Rake::Task["cuddlefish:db:create"].invoke }
       Rake::Task["db:drop"].enhance { Rake::Task["cuddlefish:db:drop"].invoke }
-
       Rake::Task["db:migrate"].enhance(["cuddlefish:force_shard_tags"]) { Rake::Task["cuddlefish:force_next_shard"].invoke }
-      Rake::Task["db:migrate:up"].enhance(["cuddlefish:force_shard_tags"])
-      Rake::Task["db:migrate:down"].enhance(["cuddlefish:force_shard_tags"])
-      Rake::Task["db:migrate:redo"].enhance(["cuddlefish:force_shard_tags"])
-      Rake::Task["db:rollback"].enhance(["cuddlefish:force_shard_tags"])
-      Rake::Task["db:migrate:status"].enhance(["cuddlefish:force_shard_tags"])
+
+      # Eventually, upgrade the built-in rake tasks as follows:
+      # rake db:migrate:down - Find migration, run against every shard that matches
+      # rake db:migrate:down - Find migration, run against every shard that matches
+      # rake db:rollback - Find latest migration, run against every shard that matches
+      # rake db:redo - Find latest migration, run down/up against every shard that matches
+      #
+      # Until then, these will error out when they're run without SHARD_TAGS
+      Rake::Task["db:migrate:up"].enhance(["cuddlefish:require_unique_shard"])
+      Rake::Task["db:migrate:down"].enhance(["cuddlefish:require_unique_shard"])
+      Rake::Task["db:migrate:redo"].enhance(["cuddlefish:require_unique_shard"])
+      Rake::Task["db:rollback"].enhance(["cuddlefish:require_unique_shard"])
+
+      # TODO: This task doens't use our monkey patch to filter out migrations belonging to other shards.
+      Rake::Task["db:migrate:status"].enhance(["cuddlefish:require_unique_shard"])
     end
   end
 end
