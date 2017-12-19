@@ -18,6 +18,8 @@ namespace :cuddlefish do
     if next_shard
       puts "Running against #{next_shard.name.inspect} shard"
       Cuddlefish.force_shard_tags!(next_shard.tags)
+      # Re-enable db:structure:dump so it'll run again when we execute db:migrate again
+      Rake::Task["db:structure:dump"].reenable
       Rake::Task["db:migrate"].execute
       Rake::Task["cuddlefish:force_next_shard"].execute
     end
