@@ -5,7 +5,7 @@ namespace :cuddlefish do
       shard_tags = ENV.fetch("SHARD_TAGS").split(",").map(&:to_sym)
       Cuddlefish.force_shard_tags!(shard_tags)
     else
-      $remaining_shards = Cuddlefish.shards
+      $remaining_shards = Cuddlefish.shards.dup
       next_shard = $remaining_shards.shift
       puts "Running against #{next_shard.name.inspect} shard"
       Cuddlefish.force_shard_tags!(next_shard.tags)
