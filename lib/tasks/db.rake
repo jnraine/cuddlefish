@@ -5,19 +5,19 @@ namespace :cuddlefish do
       shard_tags = ENV.fetch("SHARD_TAGS").split(",").map(&:to_sym)
       Cuddlefish.force_shard_tags!(shard_tags)
     else
-      $shard_tag_list = Cuddlefish.shards.map(&:tags)
-      next_shard_tags = $shard_tag_list.shift
-      puts "Running db:migrate for #{next_shard_tags}"
-      Cuddlefish.force_shard_tags!(next_shard_tags)
+      $remaining_shards = Cuddlefish.shards
+      next_shard = $remaining_shards.shift
+      puts "Running against #{next_shard.name.inspect} shard"
+      Cuddlefish.force_shard_tags!(next_shard.tags)
     end
   end
 
   task :force_next_shard do
-    next_shard_tags = $shard_tag_list.shift
+    next_shard = $remaining_shards.shift
 
-    if next_shard_tags
-      puts "Running db:migrate for #{next_shard_tags}"
-      Cuddlefish.force_shard_tags!(next_shard_tags)
+    if next_shard
+      puts "Running against #{next_shard.name.inspect} shard"
+      Cuddlefish.force_shard_tags!(next_shard.tags)
       Rake::Task["db:migrate"].execute
       Rake::Task["cuddlefish:force_next_shard"].execute
     end
