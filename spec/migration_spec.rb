@@ -2,12 +2,14 @@ require "spec_helper"
 require "fileutils"
 
 describe "Cuddlefish migration support" do
-  # These specs change the schema.
-  # Make sure it is in an expected state before and after.
+  def with_new_schema(&block)
+    rebuild_schema
+    block.call
+    rebuild_schema
+  end
+
   around do |example|
-    rebuild_schema
-    example.run
-    rebuild_schema
+    with_new_schema { example.run }
   end
 
   let(:base_dir) { "/tmp/cuddlefish-db/migrate" }

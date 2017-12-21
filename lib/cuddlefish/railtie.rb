@@ -23,7 +23,7 @@ module Cuddlefish
       Rake::Task["db:migrate"].enhance(["cuddlefish:force_shard_tags"]) { Rake::Task["cuddlefish:force_next_shard"].invoke }
 
       # Eventually, upgrade the built-in rake tasks as follows:
-      # rake db:migrate:down - Find migration, run against every shard that matches
+      # rake db:migrate:up - Find migration, run against every shard that matches
       # rake db:migrate:down - Find migration, run against every shard that matches
       # rake db:rollback - Find latest migration, run against every shard that matches
       # rake db:redo - Find latest migration, run down/up against every shard that matches
@@ -34,7 +34,7 @@ module Cuddlefish
       Rake::Task["db:migrate:redo"].enhance(["cuddlefish:require_unique_shard"])
       Rake::Task["db:rollback"].enhance(["cuddlefish:require_unique_shard"])
 
-      # TODO: This task doens't use our monkey patch to filter out migrations belonging to other shards.
+      # TODO: This task doesn't use our monkey patch to filter out migrations belonging to other shards.
       Rake::Task["db:migrate:status"].enhance(["cuddlefish:require_unique_shard"])
     end
   end

@@ -140,7 +140,7 @@ describe "Basic Cuddlefish functionality" do
       Cuddlefish.force_shard_tags(:honk) do
         expect {
           Cuddlefish::Cat.create(name: "Anastasia")
-        }.to raise_error(ActiveRecord::StatementInvalid, /Table 'honk_db.cats' doesn't exist/)
+        }.to raise_error(ActiveRecord::StatementInvalid, /Table 'honk_db\.cats' doesn't exist/)
       end
     end
 

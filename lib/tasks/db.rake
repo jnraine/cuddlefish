@@ -1,4 +1,3 @@
-# Move this into cuddlefish
 namespace :cuddlefish do
   task force_shard_tags: :environment do
     if ENV.key?("SHARD_TAGS")
