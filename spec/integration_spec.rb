@@ -9,6 +9,10 @@ require "spec_helper"
 # database server to create the necessary databases and tables.
 
 describe "Basic Cuddlefish functionality" do
+  before do
+    Cuddlefish.current_shard_tags = []
+  end
+
   describe ".use_shard_tags" do
     it "can talk to the database (sanity check)" do
       Cuddlefish.use_shard_tags(:foo) do
@@ -210,13 +214,34 @@ describe "Basic Cuddlefish functionality" do
   end
 
   describe "force shard tags (non-block form)" do
-    before { Cuddlefish.force_shard_tags!(:honk) }
     after { Cuddlefish.unforce_shard_tags! }
 
     it "requires specific shard tags for subsequent database calls" do
+      Cuddlefish.force_shard_tags!(:honk)
       expect do
         Cuddlefish::Dog.first
       end.to raise_error(ActiveRecord::StatementInvalid, /Table 'honk_db.dogs' doesn't exist/)
+      Cuddlefish.unforce_shard_tags!
+    end
+
+    it "correctly restores state with nested `force_shard_tags`" do
+      expect do
+        Cuddlefish.force_shard_tags(:honk) do
+          Cuddlefish.force_shard_tags(:foo) do
+            expect(Cuddlefish.class_tags_disabled?).to eq(true)
+            expect(Cuddlefish.current_shard_tags).to eq([:foo])
+          end
+
+          expect(Cuddlefish.class_tags_disabled?).to eq(true)
+          expect(Cuddlefish.current_shard_tags).to eq([:honk])
+        end
+      end.not_to change { [Cuddlefish.class_tags_disabled?, Cuddlefish.current_shard_tags] }
+    end
+
+    it "maintains state when called many times" do
+      Cuddlefish.add_shard_tags(:bar)
+
+      expect { Cuddlefish.unforce_shard_tags! }.not_to change { Cuddlefish.current_shard_tags }
     end
   end
 

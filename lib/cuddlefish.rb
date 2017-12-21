@@ -10,6 +10,8 @@ require "cuddlefish/shard_manager"
 require "cuddlefish/version"
 
 module Cuddlefish
+  State = Struct.new(:current_shard_tags, :class_tags_disabled, :previous_state)
+
   STATE_KEY = "Cuddlefish state"
   CLASS_TAGS_DISABLED_KEY = :"Cuddlefish class tags disabled"
 
@@ -83,15 +85,18 @@ module Cuddlefish
   end
 
   def self.force_shard_tags!(*tags)
-    state.previous_class_tags_disabled = state.class_tags_disabled
-    state.old_tags = current_shard_tags
-    self.current_shard_tags = tags.flatten
-    state.class_tags_disabled = true
+    new_state = State.new
+    new_state.previous_state = state
+    new_state.current_shard_tags = tags.flatten
+    new_state.class_tags_disabled = true
+
+    self.state = new_state
   end
 
   def self.unforce_shard_tags!
-    self.current_shard_tags = state.old_tags
-    state.class_tags_disabled = state.previous_class_tags_disabled
+    if state.previous_state
+      self.state = state.previous_state
+    end
   end
 
   # Restricts all ActiveRecord queries inside the block to shards which
@@ -140,7 +145,11 @@ module Cuddlefish
   end
 
   private_class_method def self.state
-    Thread.current[STATE_KEY] ||= Struct.new(:current_shard_tags, :class_tags_disabled, :old_tags, :previous_class_tags_disabled).new
+    Thread.current[STATE_KEY] ||= State.new
+  end
+
+  private_class_method def self.state=(value)
+    Thread.current[STATE_KEY] = value
   end
 
   private_class_method def self.iterate_over_shards(method, tags)
